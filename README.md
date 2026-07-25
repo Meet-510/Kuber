@@ -1,24 +1,10 @@
-# 🏦 NeoBanking — Modern Digital Banking Platform
+# 🏦 Kuber — Modern Digital Banking Platform
 
 A full-stack digital banking simulation built to showcase real-world fintech architecture: instant e-transfers, real-time notifications via Socket.IO, financial goal tracking, and a clean dark-mode UI.
 
 ---
 
-## ✨ Features
 
-| Feature | Details |
-|---|---|
-| **Auth** | JWT-based login/register with bcrypt password hashing |
-| **Accounts** | Auto-created on signup with $1,000 CAD simulated balance |
-| **E-Transfers** | Instant deposit if recipient exists; pending invite if not |
-| **Real-time** | Socket.IO — sender/receiver see updates under 1 second |
-| **Goals** | Create savings goals, add funds, track progress with visual bars |
-| **Notifications** | In-app notification panel with unread count badge |
-| **Analytics** | 6-month spending chart (sent vs. received) |
-| **Responsive** | Mobile-first design, works on all screen sizes |
-| **Dark mode** | Permanent dark theme with purple/blue gradient accents |
-
----
 
 ## 🧱 Tech Stack
 
@@ -105,7 +91,7 @@ http://localhost:5173
 ## 📁 Project Structure
 
 ```
-neobanking/
+Kuber/
 ├── backend/
 │   ├── src/
 │   │   ├── config/db.js           # MongoDB connection
