@@ -1,13 +1,13 @@
 import mongoose from 'mongoose';
+import logger from '../utils/logger.js';
 
-const connectDB = async () => {
+const connectDB = async (uri) => {
   try {
-    const conn = await mongoose.connect(
-      process.env.MONGODB_URI || 'mongodb://localhost:27017/banking-platform'
-    );
-    console.log(`✅ MongoDB connected: ${conn.connection.host}`);
+    const conn = await mongoose.connect(uri);
+    logger.info(`✅ MongoDB connected: ${conn.connection.host}`);
+    return conn;
   } catch (error) {
-    console.error(`❌ MongoDB connection error: ${error.message}`);
+    logger.error({ err: error }, '❌ MongoDB connection error');
     process.exit(1);
   }
 };

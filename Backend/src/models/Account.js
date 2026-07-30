@@ -18,4 +18,6 @@ accountSchema.pre('save', function (next) {
   next();
 });
 
+accountSchema.index({ userId: 1 });
+
 export default mongoose.model('Account', accountSchema);

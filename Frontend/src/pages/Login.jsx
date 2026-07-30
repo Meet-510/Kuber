@@ -29,19 +29,14 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-950 px-4">
-      {/* Background glow */}
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <div className="h-[500px] w-[500px] rounded-full bg-purple-600/10 blur-[120px]" />
-      </div>
-
       <div className="relative w-full max-w-md">
         {/* Logo */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 shadow-lg shadow-purple-500/30">
-            <Landmark className="h-7 w-7 text-white" />
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-[#1f5c3d]">
+            <Landmark className="h-7 w-7 text-[#f2f0e9]" />
           </div>
           <h1 className="text-2xl font-bold text-gray-100">Welcome back</h1>
-          <p className="mt-1 text-sm text-gray-500">Sign in to your NeoBanking account</p>
+          <p className="mt-1 text-sm text-gray-500">Sign in to your Kuber account</p>
         </div>
 
         {/* Card */}

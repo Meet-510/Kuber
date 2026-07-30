@@ -1,4 +1,6 @@
 import nodemailer from 'nodemailer';
+import logger from '../utils/logger.js';
+import { escapeHtml } from '../utils/sanitize.js';
 
 let transporter = null;
 
@@ -22,7 +24,7 @@ const getTransporter = () => {
     // Dev fallback — log to console instead of sending
     transporter = {
       sendMail: ({ to, subject }) => {
-        console.log(`📧 [DEV EMAIL] To: ${to} | Subject: ${subject}`);
+        logger.info(`📧 [DEV EMAIL] To: ${to} | Subject: ${subject}`);
         return Promise.resolve({ messageId: `dev-${Date.now()}` });
       },
     };
@@ -30,6 +32,9 @@ const getTransporter = () => {
 
   return transporter;
 };
+
+const FROM = () => process.env.FROM_EMAIL || 'noreply@kuber.dev';
+const CLIENT = () => process.env.CLIENT_URL || 'http://localhost:5173';
 
 const baseStyle = `
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -48,46 +53,44 @@ export const sendTransferReceivedEmail = async ({
   amount,
   message,
 }) => {
+  const sender = escapeHtml(senderName);
+  const name = escapeHtml(recipientName);
+  const note = escapeHtml(message);
+
   await getTransporter().sendMail({
-    from: process.env.FROM_EMAIL || 'noreply@neobank.dev',
+    from: FROM(),
     to: recipientEmail,
     subject: `💰 You received $${amount} CAD from ${senderName}`,
     html: `
       <div style="${baseStyle}">
         <h2 style="color:#a78bfa;margin-bottom:8px">You've received money!</h2>
-        <p>Hi ${recipientName || 'there'},</p>
-        <p><strong style="color:#f1f5f9">${senderName}</strong> sent you
+        <p>Hi ${name || 'there'},</p>
+        <p><strong style="color:#f1f5f9">${sender}</strong> sent you
            <strong style="color:#a78bfa; font-size:1.4em">$${amount} CAD</strong>.</p>
-        ${message ? `<p style="color:#94a3b8;font-style:italic">"${message}"</p>` : ''}
+        ${note ? `<p style="color:#94a3b8;font-style:italic">"${note}"</p>` : ''}
         <p>The funds have been added to your account.</p>
-        <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}" style="${btnStyle}">
-          View Your Account
-        </a>
+        <a href="${CLIENT()}" style="${btnStyle}">View Your Account</a>
       </div>
     `,
   });
 };
 
-export const sendTransferInviteEmail = async ({
-  recipientEmail,
-  senderName,
-  amount,
-  message,
-}) => {
+export const sendTransferInviteEmail = async ({ recipientEmail, senderName, amount, message }) => {
+  const sender = escapeHtml(senderName);
+  const note = escapeHtml(message);
+
   await getTransporter().sendMail({
-    from: process.env.FROM_EMAIL || 'noreply@neobank.dev',
+    from: FROM(),
     to: recipientEmail,
     subject: `🎉 ${senderName} sent you $${amount} CAD — Claim it now!`,
     html: `
       <div style="${baseStyle}">
         <h2 style="color:#a78bfa;margin-bottom:8px">You have a pending transfer!</h2>
-        <p><strong style="color:#f1f5f9">${senderName}</strong> sent you
+        <p><strong style="color:#f1f5f9">${sender}</strong> sent you
            <strong style="color:#a78bfa; font-size:1.4em">$${amount} CAD</strong>.</p>
-        ${message ? `<p style="color:#94a3b8;font-style:italic">"${message}"</p>` : ''}
+        ${note ? `<p style="color:#94a3b8;font-style:italic">"${note}"</p>` : ''}
         <p>Create a free account to claim your money — it will be credited automatically.</p>
-        <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/register" style="${btnStyle}">
-          Claim $${amount} CAD
-        </a>
+        <a href="${CLIENT()}/register" style="${btnStyle}">Claim $${amount} CAD</a>
       </div>
     `,
   });

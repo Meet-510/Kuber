@@ -1,7 +1,6 @@
 import { ArrowUpRight, ArrowDownLeft, Clock } from 'lucide-react';
-import { formatCurrency, formatRelativeTime, getStatusColor, getInitials } from '../lib/utils.js';
+import { formatCurrency, formatRelativeTime, getStatusColor, cn } from '../lib/utils.js';
 import { useAuthStore } from '../store/authStore.js';
-import { cn } from '../lib/utils.js';
 
 export default function TransactionItem({ tx }) {
   const user = useAuthStore((s) => s.user);

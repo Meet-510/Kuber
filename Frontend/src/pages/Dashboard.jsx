@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowUpRight, Target, TrendingUp, RefreshCw, CreditCard } from 'lucide-react';
 import { GET_ME, GET_TRANSACTIONS } from '../graphql/queries.js';
 import { useAuthStore } from '../store/authStore.js';
-import { formatCurrency, formatRelativeTime } from '../lib/utils.js';
+import { formatCurrency } from '../lib/utils.js';
 import TransactionItem from '../components/TransactionItem.jsx';
 import SpendingChart from '../components/SpendingChart.jsx';
 import Layout from '../components/Layout.jsx';
@@ -24,7 +24,7 @@ export default function Dashboard() {
 
   const account = meData?.getMe?.accounts?.[0];
   const goals = meData?.getMe?.goals?.slice(0, 3) ?? [];
-  const recentTxs = txData?.getTransactions ?? [];
+  const recentTxs = txData?.getTransactions?.items ?? [];
 
   return (
     <Layout>
@@ -51,35 +51,31 @@ export default function Dashboard() {
         {/* Balance card + Quick actions */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {/* Balance card */}
-          <div className="relative col-span-full sm:col-span-2 lg:col-span-1 overflow-hidden rounded-2xl balance-gradient p-6 text-white shadow-lg shadow-purple-500/20">
-            {/* Decorative circles */}
-            <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/5" />
-            <div className="pointer-events-none absolute -right-4 top-8 h-20 w-20 rounded-full bg-white/5" />
+          <div className="col-span-full sm:col-span-2 lg:col-span-1 rounded-xl balance-gradient p-6 text-[#f2f0e9]">
+            <div className="flex items-center gap-2 mb-4">
+              <CreditCard className="h-4 w-4 text-[#9a968c]" />
+              <p className="text-xs font-medium uppercase tracking-wider text-[#9a968c]">
+                Total balance
+              </p>
+            </div>
 
-            <div className="relative">
-              <div className="flex items-center gap-2 mb-4">
-                <CreditCard className="h-5 w-5 text-purple-200" />
-                <p className="text-sm font-medium text-purple-200">Total Balance</p>
-              </div>
+            {meLoading ? (
+              <div className="h-10 w-40 animate-pulse rounded-lg bg-white/10" />
+            ) : (
+              <p className="text-4xl font-semibold tracking-tight">
+                {formatCurrency(account?.balance ?? 0)}
+              </p>
+            )}
 
-              {meLoading ? (
-                <div className="h-10 w-40 animate-pulse rounded-lg bg-white/20" />
-              ) : (
-                <p className="text-4xl font-bold tracking-tight">
-                  {formatCurrency(account?.balance ?? 0)}
-                </p>
-              )}
+            <p className="mt-1 text-sm text-[#79756b]">{account?.currency ?? 'CAD'}</p>
 
-              <p className="mt-1 text-sm text-purple-200">{account?.currency ?? 'CAD'}</p>
-
-              <div className="mt-6 rounded-xl bg-black/20 px-4 py-2.5">
-                <p className="text-xs text-purple-200">Account Number</p>
-                <p className="font-mono text-sm tracking-widest mt-0.5">
-                  {account?.accountNumber
-                    ? account.accountNumber.replace(/(.{4})/g, '$1 ').trim()
-                    : '—'}
-                </p>
-              </div>
+            <div className="mt-6 border-t border-white/10 pt-4">
+              <p className="text-[11px] uppercase tracking-wider text-[#79756b]">Account number</p>
+              <p className="font-mono text-sm tracking-widest mt-1 text-[#d8d4ca]">
+                {account?.accountNumber
+                  ? account.accountNumber.replace(/(.{4})/g, '$1 ').trim()
+                  : '—'}
+              </p>
             </div>
           </div>
 

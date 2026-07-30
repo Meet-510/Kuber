@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { authError } from '../utils/errors.js';
 
 export const getUserFromToken = async (req) => {
   const authHeader = req.headers.authorization;
@@ -18,7 +19,7 @@ export const getUserFromToken = async (req) => {
 };
 
 export const requireAuth = (user) => {
-  if (!user) throw new Error('Authentication required');
+  if (!user) throw authError();
   return user;
 };
 

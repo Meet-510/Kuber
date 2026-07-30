@@ -33,10 +33,10 @@ export default function GoalCard({ goal, onUpdate }) {
     <div className="card group relative overflow-hidden animate-slide-up">
       {/* Completed overlay */}
       {goal.completed && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-emerald-500/10 backdrop-blur-sm z-10">
+        <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-[#f2f0e9]/90 z-10">
           <div className="text-center">
-            <Trophy className="mx-auto h-10 w-10 text-emerald-400 mb-2" />
-            <p className="font-semibold text-emerald-400">Goal Achieved!</p>
+            <Trophy className="mx-auto h-10 w-10 text-[#1f5c3d] mb-2" />
+            <p className="font-medium text-[#1f5c3d]">Goal achieved</p>
           </div>
         </div>
       )}
@@ -67,14 +67,10 @@ export default function GoalCard({ goal, onUpdate }) {
           <span>{formatCurrency(goal.savedAmount)} saved</span>
           <span>{Math.round(progress)}%</span>
         </div>
-        <div className="h-2.5 overflow-hidden rounded-full bg-gray-800">
+        <div className="h-2 overflow-hidden rounded-full bg-gray-800">
           <div
             className="h-full rounded-full transition-all duration-700 ease-out"
-            style={{
-              width: `${progress}%`,
-              background: `linear-gradient(90deg, ${goal.color}, ${goal.color}cc)`,
-              boxShadow: `0 0 8px ${goal.color}66`,
-            }}
+            style={{ width: `${progress}%`, background: goal.color }}
           />
         </div>
         <p className="mt-1.5 text-right text-xs text-gray-500">

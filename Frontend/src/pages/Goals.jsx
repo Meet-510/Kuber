@@ -9,11 +9,11 @@ import Layout from '../components/Layout.jsx';
 
 const GOAL_ICONS = ['🎯', '🏠', '✈️', '🚗', '💻', '🎓', '💍', '🏋️', '📱', '🌴', '💰', '🎵'];
 const GOAL_COLORS = [
-  '#8b5cf6', '#3b82f6', '#06b6d4', '#10b981',
-  '#f59e0b', '#ef4444', '#ec4899', '#6366f1',
+  '#1f5c3d', '#2f6b8f', '#b4453c', '#9a6b14',
+  '#6b4e8f', '#3f7a6b', '#a03d6b', '#4a5568',
 ];
 
-const DEFAULT_FORM = { name: '', targetAmount: '', deadline: '', color: '#8b5cf6', icon: '🎯' };
+const DEFAULT_FORM = { name: '', targetAmount: '', deadline: '', color: '#1f5c3d', icon: '🎯' };
 
 export default function Goals() {
   const [showModal, setShowModal] = useState(false);
@@ -95,10 +95,10 @@ export default function Goals() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            className="absolute inset-0 bg-[#1a1915]/40"
             onClick={() => setShowModal(false)}
           />
-          <div className="relative w-full max-w-md rounded-2xl bg-gray-900 border border-gray-800 p-6 shadow-2xl animate-slide-up">
+          <div className="relative w-full max-w-md rounded-xl bg-gray-900 border border-gray-800 p-6 shadow-card animate-slide-up">
             {/* Close */}
             <button
               onClick={() => setShowModal(false)}
@@ -186,7 +186,7 @@ export default function Goals() {
                       type="button"
                       onClick={() => setForm({ ...form, color })}
                       className={`h-7 w-7 rounded-full transition-transform ${
-                        form.color === color ? 'scale-125 ring-2 ring-white ring-offset-2 ring-offset-gray-900' : 'hover:scale-110'
+                        form.color === color ? 'scale-125 ring-2 ring-gray-100 ring-offset-2 ring-offset-gray-900' : 'hover:scale-110'
                       }`}
                       style={{ background: color }}
                     />

@@ -22,16 +22,20 @@ export const GET_ME = gql`
 export const GET_TRANSACTIONS = gql`
   query GetTransactions($limit: Int, $offset: Int) {
     getTransactions(limit: $limit, offset: $offset) {
-      id
-      senderEmail
-      receiverEmail
-      senderName
-      receiverName
-      amount
-      message
-      status
-      type
-      createdAt
+      items {
+        id
+        senderEmail
+        receiverEmail
+        senderName
+        receiverName
+        amount
+        message
+        status
+        type
+        createdAt
+      }
+      totalCount
+      hasMore
     }
   }
 `;

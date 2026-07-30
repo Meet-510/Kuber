@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * NeoBanking Platform — Automated Setup Script
+ * Kuber — Automated Setup Script
  * Works on Windows, macOS, and Linux.
  * Usage: node setup.js
  */
@@ -18,7 +18,7 @@ const warn = (msg) => console.log(`  ⚠️  ${msg}`);
 const err = (msg) => { console.error(`  ❌ ${msg}`); process.exit(1); };
 
 console.log('\n╔══════════════════════════════════════╗');
-console.log('║    🏦  NeoBanking — Setup Wizard     ║');
+console.log('║      🏦  Kuber — Setup Wizard        ║');
 console.log('╚══════════════════════════════════════╝\n');
 
 // ── Node version check ─────────────────────────────────────────────────────────
@@ -28,8 +28,8 @@ ok(`Node.js v${process.versions.node}`);
 
 // ── Backend .env ───────────────────────────────────────────────────────────────
 log('Setting up backend environment…');
-const backendEnv = join(__dirname, 'backend', '.env');
-const backendEnvEx = join(__dirname, 'backend', '.env.example');
+const backendEnv = join(__dirname, 'Backend', '.env');
+const backendEnvEx = join(__dirname, 'Backend', '.env.example');
 
 if (!existsSync(backendEnv)) {
   let content = readFileSync(backendEnvEx, 'utf8');
@@ -43,8 +43,8 @@ if (!existsSync(backendEnv)) {
 
 // ── Frontend .env ──────────────────────────────────────────────────────────────
 log('Setting up frontend environment…');
-const frontendEnv = join(__dirname, 'frontend', '.env');
-const frontendEnvEx = join(__dirname, 'frontend', '.env.example');
+const frontendEnv = join(__dirname, 'Frontend', '.env');
+const frontendEnvEx = join(__dirname, 'Frontend', '.env.example');
 
 if (!existsSync(frontendEnv)) {
   copyFileSync(frontendEnvEx, frontendEnv);
@@ -56,7 +56,7 @@ if (!existsSync(frontendEnv)) {
 // ── Install dependencies ───────────────────────────────────────────────────────
 console.log('\n📦 Installing backend dependencies…');
 try {
-  execSync('npm install', { cwd: join(__dirname, 'backend'), stdio: 'inherit' });
+  execSync('npm install', { cwd: join(__dirname, 'Backend'), stdio: 'inherit' });
   ok('Backend packages installed');
 } catch {
   err('Failed to install backend dependencies. Is npm available?');
@@ -64,7 +64,7 @@ try {
 
 console.log('\n📦 Installing frontend dependencies…');
 try {
-  execSync('npm install', { cwd: join(__dirname, 'frontend'), stdio: 'inherit' });
+  execSync('npm install', { cwd: join(__dirname, 'Frontend'), stdio: 'inherit' });
   ok('Frontend packages installed');
 } catch {
   err('Failed to install frontend dependencies.');
@@ -80,17 +80,17 @@ Next steps:
 
   1. Make sure MongoDB is running:
        mongod
-     Or use MongoDB Atlas — update MONGODB_URI in backend/.env
+     Or use MongoDB Atlas — update MONGODB_URI in Backend/.env
 
-  2. (Optional) Configure email in backend/.env
+  2. (Optional) Configure email in Backend/.env
        Add SMTP_HOST / SMTP_USER / SMTP_PASS  or  SENDGRID_API_KEY
        In dev mode emails are only logged to the console — no config needed.
 
   3. Start the backend (Terminal 1):
-       cd backend && npm run dev
+       cd Backend && npm run dev
 
   4. Start the frontend (Terminal 2):
-       cd frontend && npm run dev
+       cd Frontend && npm run dev
 
   5. Open your browser:
        http://localhost:5173

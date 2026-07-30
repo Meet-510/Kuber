@@ -49,7 +49,7 @@ export default function Profile() {
 
         {/* Avatar + name */}
         <div className="card flex items-center gap-5">
-          <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-500 text-2xl font-bold text-white">
+          <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full bg-[#1f5c3d] text-2xl font-medium text-[#f2f0e9]">
             {me?.avatar ? (
               <img src={me.avatar} alt={me.name} className="h-20 w-20 rounded-full object-cover" />
             ) : (

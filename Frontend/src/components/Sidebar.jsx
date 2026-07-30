@@ -27,10 +27,10 @@ export default function Sidebar({ onClose }) {
     <aside className="flex h-full w-64 flex-col bg-gray-900 border-r border-gray-800">
       {/* Logo */}
       <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-800">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-purple-600 to-blue-600">
-          <Landmark className="h-5 w-5 text-white" />
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#1f5c3d]">
+          <Landmark className="h-5 w-5 text-[#f2f0e9]" />
         </div>
-        <span className="text-lg font-bold gradient-text">NeoBanking</span>
+        <span className="text-lg font-semibold tracking-tight text-gray-100">Kuber</span>
       </div>
 
       {/* Nav */}
@@ -57,7 +57,7 @@ export default function Sidebar({ onClose }) {
       {/* User footer */}
       <div className="border-t border-gray-800 p-4">
         <div className="flex items-center gap-3 mb-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-500 text-sm font-bold text-white flex-shrink-0">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1f5c3d] text-sm font-medium text-[#f2f0e9] flex-shrink-0">
             {user?.avatar ? (
               <img src={user.avatar} alt={user.name} className="h-9 w-9 rounded-full object-cover" />
             ) : (

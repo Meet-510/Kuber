@@ -1,14 +1,14 @@
 @echo off
 setlocal enabledelayedexpansion
-title NeoBanking — Startup
+title Kuber — Startup
 
 echo.
-echo  ███╗   ██╗███████╗ ██████╗  ██████╗  █████╗ ███╗   ██╗██╗  ██╗██╗███╗   ██╗ ██████╗
-echo  ████╗  ██║██╔════╝██╔═══██╗██╔══██╗██╔══██╗████╗  ██║██║ ██╔╝██║████╗  ██║██╔════╝
-echo  ██╔██╗ ██║█████╗  ██║   ██║██████╔╝███████║██╔██╗ ██║█████╔╝ ██║██╔██╗ ██║██║  ███╗
-echo  ██║╚██╗██║██╔══╝  ██║   ██║██╔══██╗██╔══██║██║╚██╗██║██╔═██╗ ██║██║╚██╗██║██║   ██║
-echo  ██║ ╚████║███████╗╚██████╔╝██████╔╝██║  ██║██║ ╚████║██║  ██╗██║██║ ╚████║╚██████╔╝
-echo  ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝
+echo  ██╗  ██╗██╗   ██╗██████╗ ███████╗██████╗
+echo  ██║ ██╔╝██║   ██║██╔══██╗██╔════╝██╔══██╗
+echo  █████╔╝ ██║   ██║██████╔╝█████╗  ██████╔╝
+echo  ██╔═██╗ ██║   ██║██╔══██╗██╔══╝  ██╔══██╗
+echo  ██║  ██╗╚██████╔╝██████╔╝███████╗██║  ██║
+echo  ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝
 echo.
 echo  Digital Banking Platform — Automated Startup
 echo  ═══════════════════════════════════════════════
@@ -131,8 +131,8 @@ call npx concurrently ^
     --prefix "[{name}]" ^
     --timestamp-format "HH:mm:ss" ^
     --kill-others-on-fail ^
-    "npm run dev --prefix backend" ^
-    "npm run dev --prefix frontend"
+    "npm run dev --prefix Backend" ^
+    "npm run dev --prefix Frontend"
 
 echo.
 echo  Servers stopped.

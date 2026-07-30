@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# NeoBanking Platform — Quick setup (Unix/macOS)
+# Kuber — Quick setup (Unix/macOS)
 set -e
 
 echo ""
 echo "╔══════════════════════════════════════╗"
-echo "║    🏦  NeoBanking — Setup Wizard     ║"
+echo "║      🏦  Kuber — Setup Wizard        ║"
 echo "╚══════════════════════════════════════╝"
 echo ""
 

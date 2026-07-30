@@ -11,7 +11,7 @@ export const useAuthStore = create(
       isAuthenticated: false,
 
       setAuth: (user, token) => {
-        localStorage.setItem('neo_token', token);
+        localStorage.setItem('kuber_token', token);
         set({ user, token, isAuthenticated: true });
       },
 
@@ -19,14 +19,14 @@ export const useAuthStore = create(
         set((state) => ({ user: { ...state.user, ...updates } })),
 
       logout: () => {
-        localStorage.removeItem('neo_token');
+        localStorage.removeItem('kuber_token');
         disconnectSocket();
         client.clearStore();
         set({ user: null, token: null, isAuthenticated: false });
       },
     }),
     {
-      name: 'neo_auth',
+      name: 'kuber_auth',
       partialize: (s) => ({ user: s.user, token: s.token, isAuthenticated: s.isAuthenticated }),
     }
   )

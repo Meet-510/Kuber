@@ -29,8 +29,18 @@ export const LOGIN_USER = gql`
 `;
 
 export const SEND_TRANSFER = gql`
-  mutation SendTransfer($recipientEmail: String!, $amount: Float!, $message: String) {
-    sendTransfer(recipientEmail: $recipientEmail, amount: $amount, message: $message) {
+  mutation SendTransfer(
+    $recipientEmail: String!
+    $amount: Float!
+    $message: String
+    $idempotencyKey: String
+  ) {
+    sendTransfer(
+      recipientEmail: $recipientEmail
+      amount: $amount
+      message: $message
+      idempotencyKey: $idempotencyKey
+    ) {
       id
       status
       amount

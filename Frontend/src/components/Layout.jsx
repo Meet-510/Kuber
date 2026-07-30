@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Menu, Bell, X } from 'lucide-react';
 import { useQuery } from '@apollo/client';
 import { useAuthStore } from '../store/authStore.js';
-import { connectSocket, getSocket } from '../lib/socket.js';
+import { connectSocket } from '../lib/socket.js';
 import { client } from '../lib/apolloClient.js';
 import { GET_ME } from '../graphql/queries.js';
 import Sidebar from './Sidebar.jsx';
@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const { token, user, updateUser } = useAuthStore();
+  const { token } = useAuthStore();
   const notifRef = useRef(null);
 
   const { data } = useQuery(GET_ME, { skip: !token });

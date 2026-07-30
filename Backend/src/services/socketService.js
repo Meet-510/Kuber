@@ -1,8 +1,9 @@
 import jwt from 'jsonwebtoken';
+import logger from '../utils/logger.js';
 
 export const setupSocketHandlers = (io) => {
   io.on('connection', (socket) => {
-    console.log(`🔌 Socket connected: ${socket.id}`);
+    logger.debug(`🔌 Socket connected: ${socket.id}`);
 
     socket.on('authenticate', (token) => {
       try {
@@ -11,14 +12,14 @@ export const setupSocketHandlers = (io) => {
         socket.join(userId);
         socket.userId = userId;
         socket.emit('authenticated', { userId });
-        console.log(`✅ Socket authenticated: user ${userId}`);
+        logger.debug(`✅ Socket authenticated: user ${userId}`);
       } catch {
         socket.emit('auth_error', { message: 'Invalid token' });
       }
     });
 
     socket.on('disconnect', () => {
-      console.log(`❌ Socket disconnected: ${socket.id}`);
+      logger.debug(`❌ Socket disconnected: ${socket.id}`);
     });
   });
 };

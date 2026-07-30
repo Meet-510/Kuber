@@ -7,7 +7,7 @@ const httpLink = createHttpLink({
 });
 
 const authLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem('neo_token');
+  const token = localStorage.getItem('kuber_token');
   return {
     headers: {
       ...headers,
@@ -20,7 +20,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors) {
     for (const { message } of graphQLErrors) {
       if (message === 'Authentication required') {
-        localStorage.removeItem('neo_token');
+        localStorage.removeItem('kuber_token');
         window.location.href = '/login';
       }
     }
@@ -36,7 +36,20 @@ export const client = new ApolloClient({
     typePolicies: {
       Query: {
         fields: {
-          getTransactions: { merge: false },
+          // Offset-based pagination: separate cache buckets per page size,
+          // and merge incoming pages into the list at their offset so
+          // "load more" appends instead of replacing.
+          getTransactions: {
+            keyArgs: ['limit'],
+            merge(existing, incoming, { args }) {
+              const offset = args?.offset ?? 0;
+              const items = existing ? existing.items.slice(0) : [];
+              for (let i = 0; i < incoming.items.length; i++) {
+                items[offset + i] = incoming.items[i];
+              }
+              return { ...incoming, items };
+            },
+          },
           getNotifications: { merge: false },
         },
       },

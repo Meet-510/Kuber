@@ -8,12 +8,17 @@
   }
   body {
     @apply bg-gray-950 text-gray-100 antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    font-variant-numeric: tabular-nums;
+  }
+  ::selection {
+    background: rgba(31, 92, 61, 0.16);
   }
   ::-webkit-scrollbar {
     @apply w-1.5;
   }
   ::-webkit-scrollbar-track {
-    @apply bg-gray-900;
+    @apply bg-transparent;
   }
   ::-webkit-scrollbar-thumb {
     @apply rounded-full bg-gray-700;
@@ -22,21 +27,21 @@
 
 @layer components {
   .card {
-    @apply rounded-2xl bg-gray-900 border border-gray-800 p-6;
+    @apply rounded-xl bg-gray-900 border border-gray-800 p-6 shadow-card;
   }
   .btn-primary {
-    @apply rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 px-5 py-2.5 font-semibold
-           text-white shadow-lg shadow-purple-500/20 hover:from-purple-500 hover:to-blue-500
-           transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply rounded-[10px] bg-[#1f5c3d] px-5 py-2.5 font-medium text-[#f2f0e9]
+           hover:bg-[#184a31] transition-colors duration-150
+           active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-secondary {
-    @apply rounded-xl bg-gray-800 px-5 py-2.5 font-semibold text-gray-200
-           hover:bg-gray-700 transition-all duration-200 active:scale-95;
+    @apply rounded-[10px] border border-gray-700 bg-transparent px-5 py-2.5 font-medium text-gray-300
+           hover:bg-gray-800 transition-colors duration-150 active:scale-[0.98];
   }
   .input-field {
-    @apply w-full rounded-xl bg-gray-800 border border-gray-700 px-4 py-3 text-gray-100
-           placeholder-gray-500 focus:border-purple-500 focus:outline-none focus:ring-1
-           focus:ring-purple-500 transition-colors duration-200;
+    @apply w-full rounded-[10px] bg-white border border-gray-700 px-4 py-3 text-gray-100
+           placeholder-gray-600 focus:border-[#1f5c3d] focus:outline-none focus:ring-1
+           focus:ring-[#1f5c3d]/40 transition-colors duration-150;
   }
   .label {
     @apply block text-sm font-medium text-gray-400 mb-1.5;
@@ -46,23 +51,12 @@
   }
 }
 
-/* Glassmorphism utility */
-.glass {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-/* Gradient text */
+/* Brand wordmark — solid ink-green, no gradient */
 .gradient-text {
-  background: linear-gradient(135deg, #a78bfa, #60a5fa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #1f5c3d;
 }
 
-/* Balance card gradient */
+/* Balance hero — solid ink block instead of a gradient */
 .balance-gradient {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%);
+  background: #1a1915;
 }

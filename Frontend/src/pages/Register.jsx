@@ -15,7 +15,7 @@ export default function Register() {
   const [register, { loading }] = useMutation(REGISTER_USER, {
     onCompleted: ({ registerUser }) => {
       setAuth(registerUser.user, registerUser.token);
-      toast.success(`Welcome to NeoBanking, ${registerUser.user.name}! 🎉`);
+      toast.success(`Welcome to Kuber, ${registerUser.user.name}! 🎉`);
       navigate('/dashboard');
     },
     onError: (e) => toast.error(e.message),
@@ -37,16 +37,12 @@ export default function Register() {
   return (
     <div className="flex min-h-screen bg-gray-950">
       {/* Left panel — hidden on mobile */}
-      <div className="hidden lg:flex lg:flex-1 lg:flex-col lg:justify-center lg:px-16 relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute top-1/4 -left-20 h-80 w-80 rounded-full bg-purple-600/15 blur-[100px]" />
-          <div className="absolute bottom-1/4 right-0 h-80 w-80 rounded-full bg-blue-600/15 blur-[100px]" />
-        </div>
-        <div className="relative">
-          <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600">
-            <Landmark className="h-7 w-7 text-white" />
+      <div className="hidden lg:flex lg:flex-1 lg:flex-col lg:justify-center lg:px-16 border-r border-gray-800">
+        <div>
+          <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-[#1f5c3d]">
+            <Landmark className="h-7 w-7 text-[#f2f0e9]" />
           </div>
-          <h2 className="text-4xl font-bold text-gray-100 leading-tight">
+          <h2 className="text-4xl font-semibold text-gray-100 leading-tight tracking-tight">
             Banking built for<br />
             <span className="gradient-text">the modern age</span>
           </h2>
@@ -71,8 +67,8 @@ export default function Register() {
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="mb-8 text-center lg:hidden">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600">
-              <Landmark className="h-7 w-7 text-white" />
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-[#1f5c3d]">
+              <Landmark className="h-7 w-7 text-[#f2f0e9]" />
             </div>
           </div>
 

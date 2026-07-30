@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import User from '../models/User.js';
 import Account from '../models/Account.js';
@@ -7,6 +8,19 @@ import Notification from '../models/Notification.js';
 import { generateToken, requireAuth } from '../middleware/auth.js';
 import { sendTransferReceivedEmail, sendTransferInviteEmail } from '../services/emailService.js';
 import { emitToUser } from '../services/socketService.js';
+import { badRequest, notFound, insufficientFunds } from '../utils/errors.js';
+import logger from '../utils/logger.js';
+import {
+  validate,
+  registerSchema,
+  loginSchema,
+  transferSchema,
+  createGoalSchema,
+  addToGoalSchema,
+} from '../utils/validators.js';
+
+// MongoDB duplicate-key error code (used to detect idempotency-key replays).
+const DUPLICATE_KEY = 11000;
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -33,9 +47,8 @@ const fmtNotif = (n) => ({
   createdAt: n.createdAt instanceof Date ? n.createdAt.toISOString() : n.createdAt,
 });
 
-const createNotification = async (userId, title, message, type, relatedId) => {
-  const n = new Notification({ userId, title, message, type, relatedId });
-  await n.save();
+const createNotification = async (userId, title, message, type, relatedId, session = null) => {
+  const [n] = await Notification.create([{ userId, title, message, type, relatedId }], { session });
   return n;
 };
 
@@ -114,15 +127,22 @@ const resolvers = {
     getTransactions: async (_, { limit = 50, offset = 0 }, { user }) => {
       requireAuth(user);
       const account = await Account.findOne({ userId: user._id }).lean();
-      if (!account) return [];
-      const txs = await Transaction.find({
+      if (!account) return { items: [], totalCount: 0, hasMore: false };
+
+      const filter = {
         $or: [{ senderAccount: account._id }, { receiverAccount: account._id }],
-      })
-        .sort({ createdAt: -1 })
-        .skip(offset)
-        .limit(limit)
-        .lean();
-      return txs.map(fmtTx);
+      };
+
+      const [txs, totalCount] = await Promise.all([
+        Transaction.find(filter).sort({ createdAt: -1 }).skip(offset).limit(limit).lean(),
+        Transaction.countDocuments(filter),
+      ]);
+
+      return {
+        items: txs.map(fmtTx),
+        totalCount,
+        hasMore: offset + txs.length < totalCount,
+      };
     },
 
     getGoals: async (_, __, { user }) => {
@@ -148,35 +168,45 @@ const resolvers = {
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-      const txs = await Transaction.find({
-        $or: [{ senderAccount: account._id }, { receiverAccount: account._id }],
-        status: 'COMPLETED',
-        createdAt: { $gte: sixMonthsAgo },
-      }).lean();
+      // Aggregate the sent/received totals per month in the database rather
+      // than loading every transaction into Node and reducing in JS — this
+      // scales to any history size and does the grouping where the data lives.
+      const rows = await Transaction.aggregate([
+        {
+          $match: {
+            $or: [{ senderAccount: account._id }, { receiverAccount: account._id }],
+            status: 'COMPLETED',
+            createdAt: { $gte: sixMonthsAgo },
+          },
+        },
+        {
+          $group: {
+            _id: { $dateTrunc: { date: '$createdAt', unit: 'month' } },
+            sent: {
+              $sum: { $cond: [{ $eq: ['$senderAccount', account._id] }, '$amount', 0] },
+            },
+            received: {
+              $sum: { $cond: [{ $eq: ['$senderAccount', account._id] }, 0, '$amount'] },
+            },
+          },
+        },
+        { $sort: { _id: 1 } },
+        { $limit: 6 },
+      ]);
 
-      const monthMap = {};
-      txs.forEach((tx) => {
-        const d = new Date(tx.createdAt);
-        const key = d.toLocaleString('default', { month: 'short', year: '2-digit' });
-        if (!monthMap[key]) monthMap[key] = { month: key, sent: 0, received: 0, ts: d.getTime() };
-        if (tx.senderAccount?.toString() === account._id.toString()) {
-          monthMap[key].sent += tx.amount;
-        } else {
-          monthMap[key].received += tx.amount;
-        }
-      });
-
-      return Object.values(monthMap)
-        .sort((a, b) => a.ts - b.ts)
-        .slice(-6)
-        .map(({ month, sent, received }) => ({ month, sent, received }));
+      return rows.map(({ _id, sent, received }) => ({
+        month: new Date(_id).toLocaleString('default', { month: 'short', year: '2-digit' }),
+        sent,
+        received,
+      }));
     },
   },
 
   // ── Mutations ──────────────────────────────────────────────────────────────
   Mutation: {
-    registerUser: async (_, { name, email, password }) => {
-      if (await User.findOne({ email })) throw new Error('Email already in use');
+    registerUser: async (_, args) => {
+      const { name, email, password } = validate(registerSchema, args);
+      if (await User.findOne({ email })) throw badRequest('Email already in use');
 
       const user = await new User({ name, email, password }).save();
       const account = await new Account({ userId: user._id }).save();
@@ -203,182 +233,271 @@ const resolvers = {
       return { token, user: toId(user.toJSON()) };
     },
 
-    loginUser: async (_, { email, password }) => {
+    loginUser: async (_, args) => {
+      const { email, password } = validate(loginSchema, args);
       const user = await User.findOne({ email });
       if (!user || !(await user.comparePassword(password)))
-        throw new Error('Invalid email or password');
+        throw badRequest('Invalid email or password');
 
       const token = generateToken(user._id.toString());
       return { token, user: toId(user.toJSON()) };
     },
 
-    sendTransfer: async (_, { recipientEmail, amount, message = '' }, { user, io }) => {
+    sendTransfer: async (_, args, { user, io }) => {
       requireAuth(user);
 
-      if (recipientEmail.toLowerCase() === user.email.toLowerCase())
-        throw new Error('You cannot send money to yourself');
-      if (amount <= 0) throw new Error('Amount must be greater than 0');
+      const { recipientEmail, amount, message } = validate(transferSchema, args);
+      const { idempotencyKey } = args;
+      const toEmail = recipientEmail; // already normalized by the validator
 
-      const senderAccount = await Account.findOne({ userId: user._id });
-      if (!senderAccount) throw new Error('No account found. Please contact support.');
-      if (senderAccount.balance < amount) throw new Error('Insufficient balance');
+      if (toEmail === user.email.toLowerCase())
+        throw badRequest('You cannot send money to yourself');
 
-      // Deduct from sender immediately
-      senderAccount.balance -= amount;
-      await senderAccount.save();
-
-      const recipient = await User.findOne({ email: recipientEmail.toLowerCase() }).lean();
-
-      let tx;
-
-      if (recipient) {
-        // ── Instant transfer ──────────────────────────────────────────────
-        const receiverAccount = await Account.findOne({ userId: recipient._id });
-        if (!receiverAccount) throw new Error('Recipient has no account');
-
-        receiverAccount.balance += amount;
-        await receiverAccount.save();
-
-        tx = await new Transaction({
-          senderAccount: senderAccount._id,
-          receiverAccount: receiverAccount._id,
+      // Idempotency: a replayed request (double-click, network retry) with the
+      // same key returns the original transaction instead of moving money again.
+      if (idempotencyKey) {
+        const existing = await Transaction.findOne({
+          idempotencyKey,
           senderEmail: user.email,
-          receiverEmail: recipientEmail,
-          senderName: user.name,
-          receiverName: recipient.name,
-          amount,
-          message,
-          status: 'COMPLETED',
-        }).save();
-
-        // Notifications
-        const [sn, rn] = await Promise.all([
-          createNotification(
-            user._id,
-            'Transfer Sent',
-            `$${amount} CAD sent to ${recipient.name}`,
-            'TRANSFER_SENT',
-            tx._id
-          ),
-          createNotification(
-            recipient._id,
-            'Money Received!',
-            `${user.name} sent you $${amount} CAD`,
-            'TRANSFER_RECEIVED',
-            tx._id
-          ),
-        ]);
-
-        // Real-time events
-        emitToUser(io, user._id.toString(), 'transfer_sent', {
-          transaction: fmtTx(tx.toObject()),
-          newBalance: senderAccount.balance,
-          notification: fmtNotif(sn.toObject()),
-        });
-        emitToUser(io, recipient._id.toString(), 'transfer_received', {
-          transaction: fmtTx(tx.toObject()),
-          newBalance: receiverAccount.balance,
-          senderName: user.name,
-          amount,
-          notification: fmtNotif(rn.toObject()),
-        });
-
-        // Email (fire-and-forget)
-        sendTransferReceivedEmail({
-          recipientEmail,
-          recipientName: recipient.name,
-          senderName: user.name,
-          amount,
-          message,
-        }).catch((e) => console.error('Email error:', e.message));
-      } else {
-        // ── Pending transfer (invite flow) ────────────────────────────────
-        tx = await new Transaction({
-          senderAccount: senderAccount._id,
-          senderEmail: user.email,
-          receiverEmail: recipientEmail,
-          senderName: user.name,
-          amount,
-          message,
-          status: 'PENDING',
-          pendingToken: uuidv4(),
-        }).save();
-
-        const sn = await createNotification(
-          user._id,
-          'Transfer Pending',
-          `$${amount} CAD pending — ${recipientEmail} hasn't registered yet`,
-          'TRANSFER_PENDING',
-          tx._id
-        );
-
-        emitToUser(io, user._id.toString(), 'transfer_pending', {
-          transaction: fmtTx(tx.toObject()),
-          newBalance: senderAccount.balance,
-          notification: fmtNotif(sn.toObject()),
-        });
-
-        sendTransferInviteEmail({
-          recipientEmail,
-          senderName: user.name,
-          amount,
-          message,
-        }).catch((e) => console.error('Invite email error:', e.message));
+        }).lean();
+        if (existing) return fmtTx(existing);
       }
 
-      return fmtTx(tx.toObject());
+      const session = await mongoose.startSession();
+
+      // Captured inside the transaction, consumed after it commits.
+      let tx;
+      let senderNewBalance;
+      let recipient = null;
+      let receiverNewBalance;
+      let senderNotif;
+      let receiverNotif;
+
+      try {
+        await session.withTransaction(async () => {
+          // Atomic conditional debit — never read-modify-write.
+          const senderAccount = await Account.findOneAndUpdate(
+            { userId: user._id, balance: { $gte: amount } },
+            { $inc: { balance: -amount } },
+            { new: true, session }
+          );
+
+          if (!senderAccount) {
+            const existing = await Account.findOne({ userId: user._id }).session(session);
+            if (existing) throw insufficientFunds();
+            throw badRequest('No account found. Please contact support.');
+          }
+          senderNewBalance = senderAccount.balance;
+
+          const found = await User.findOne({ email: toEmail }).session(session);
+
+          if (found) {
+            // ── Instant transfer ──────────────────────────────────────────
+            recipient = found;
+            const receiverAccount = await Account.findOneAndUpdate(
+              { userId: recipient._id },
+              { $inc: { balance: amount } },
+              { new: true, session }
+            );
+            if (!receiverAccount) throw badRequest('Recipient has no account');
+            receiverNewBalance = receiverAccount.balance;
+
+            [tx] = await Transaction.create(
+              [
+                {
+                  senderAccount: senderAccount._id,
+                  receiverAccount: receiverAccount._id,
+                  senderEmail: user.email,
+                  receiverEmail: toEmail,
+                  senderName: user.name,
+                  receiverName: recipient.name,
+                  amount,
+                  message,
+                  status: 'COMPLETED',
+                  idempotencyKey: idempotencyKey || null,
+                },
+              ],
+              { session }
+            );
+
+            senderNotif = await createNotification(
+              user._id,
+              'Transfer Sent',
+              `$${amount} CAD sent to ${recipient.name}`,
+              'TRANSFER_SENT',
+              tx._id,
+              session
+            );
+            receiverNotif = await createNotification(
+              recipient._id,
+              'Money Received!',
+              `${user.name} sent you $${amount} CAD`,
+              'TRANSFER_RECEIVED',
+              tx._id,
+              session
+            );
+          } else {
+            // ── Pending transfer (invite flow) ────────────────────────────
+            [tx] = await Transaction.create(
+              [
+                {
+                  senderAccount: senderAccount._id,
+                  senderEmail: user.email,
+                  receiverEmail: toEmail,
+                  senderName: user.name,
+                  amount,
+                  message,
+                  status: 'PENDING',
+                  pendingToken: uuidv4(),
+                  idempotencyKey: idempotencyKey || null,
+                },
+              ],
+              { session }
+            );
+
+            senderNotif = await createNotification(
+              user._id,
+              'Transfer Pending',
+              `$${amount} CAD pending — ${recipientEmail} hasn't registered yet`,
+              'TRANSFER_PENDING',
+              tx._id,
+              session
+            );
+          }
+        });
+
+        // ── Side effects: ONLY after the transaction commits ──────────────
+        if (recipient) {
+          emitToUser(io, user._id.toString(), 'transfer_sent', {
+            transaction: fmtTx(tx.toObject()),
+            newBalance: senderNewBalance,
+            notification: fmtNotif(senderNotif.toObject()),
+          });
+          emitToUser(io, recipient._id.toString(), 'transfer_received', {
+            transaction: fmtTx(tx.toObject()),
+            newBalance: receiverNewBalance,
+            senderName: user.name,
+            amount,
+            notification: fmtNotif(receiverNotif.toObject()),
+          });
+
+          sendTransferReceivedEmail({
+            recipientEmail,
+            recipientName: recipient.name,
+            senderName: user.name,
+            amount,
+            message,
+          }).catch((e) => logger.error({ err: e }, 'Transfer-received email failed'));
+        } else {
+          emitToUser(io, user._id.toString(), 'transfer_pending', {
+            transaction: fmtTx(tx.toObject()),
+            newBalance: senderNewBalance,
+            notification: fmtNotif(senderNotif.toObject()),
+          });
+
+          sendTransferInviteEmail({
+            recipientEmail,
+            senderName: user.name,
+            amount,
+            message,
+          }).catch((e) => logger.error({ err: e }, 'Transfer-invite email failed'));
+        }
+
+        return fmtTx(tx.toObject());
+      } catch (err) {
+        // Idempotency race: a concurrent request with the same key already
+        // committed. Return the winning transaction instead of erroring.
+        if (err?.code === DUPLICATE_KEY && idempotencyKey) {
+          const existing = await Transaction.findOne({
+            idempotencyKey,
+            senderEmail: user.email,
+          }).lean();
+          if (existing) return fmtTx(existing);
+        }
+        throw err;
+      } finally {
+        await session.endSession();
+      }
     },
 
-    createGoal: async (_, { name, targetAmount, deadline, color, icon }, { user }) => {
+    createGoal: async (_, args, { user }) => {
       requireAuth(user);
+      const { name, targetAmount, deadline, color, icon } = validate(createGoalSchema, args);
       const goal = await new Goal({
         userId: user._id,
         name,
         targetAmount,
         deadline: deadline ? new Date(deadline) : null,
-        color: color || '#8b5cf6',
+        color: color || '#1f5c3d',
         icon: icon || '🎯',
       }).save();
       return fmtGoal(goal.toObject());
     },
 
-    addToGoal: async (_, { goalId, amount }, { user, io }) => {
+    addToGoal: async (_, args, { user, io }) => {
       requireAuth(user);
-      if (amount <= 0) throw new Error('Amount must be greater than 0');
+      const { goalId, amount } = validate(addToGoalSchema, args);
 
-      const [goal, account] = await Promise.all([
-        Goal.findOne({ _id: goalId, userId: user._id }),
-        Account.findOne({ userId: user._id }),
-      ]);
+      const session = await mongoose.startSession();
 
-      if (!goal) throw new Error('Goal not found');
-      if (!account) throw new Error('Account not found');
-      if (account.balance < amount) throw new Error('Insufficient balance');
+      // Captured inside the transaction, consumed after it commits.
+      let goal;
+      let newBalance;
+      let notif;
 
-      account.balance -= amount;
-      goal.savedAmount = Math.min(goal.savedAmount + amount, goal.targetAmount);
-      if (goal.savedAmount >= goal.targetAmount) goal.completed = true;
+      try {
+        await session.withTransaction(async () => {
+          goal = await Goal.findOne({ _id: goalId, userId: user._id }).session(session);
+          if (!goal) throw notFound('Goal not found');
 
-      await Promise.all([account.save(), goal.save()]);
+          const remaining = goal.targetAmount - goal.savedAmount;
+          if (remaining <= 0) throw badRequest('This goal is already complete');
 
-      const progress = Math.round((goal.savedAmount / goal.targetAmount) * 100);
-      const n = await createNotification(
-        user._id,
-        goal.completed ? 'Goal Achieved! 🎉' : 'Goal Updated',
-        goal.completed
-          ? `Congratulations! You've reached your "${goal.name}" goal!`
-          : `$${amount} added to "${goal.name}" — ${progress}% complete`,
-        'GOAL_PROGRESS',
-        goal._id
-      );
+          // Money-safe: never debit more than the goal needs.
+          const applied = Math.min(amount, remaining);
 
-      emitToUser(io, user._id.toString(), 'goal_updated', {
-        goal: fmtGoal(goal.toObject()),
-        newBalance: account.balance,
-        notification: fmtNotif(n.toObject()),
-      });
+          // Atomic conditional debit — never read-modify-write.
+          const account = await Account.findOneAndUpdate(
+            { userId: user._id, balance: { $gte: applied } },
+            { $inc: { balance: -applied } },
+            { new: true, session }
+          );
 
-      return fmtGoal(goal.toObject());
+          if (!account) {
+            const existing = await Account.findOne({ userId: user._id }).session(session);
+            if (existing) throw insufficientFunds();
+            throw notFound('Account not found');
+          }
+          newBalance = account.balance;
+
+          goal.savedAmount += applied;
+          if (goal.savedAmount >= goal.targetAmount) goal.completed = true;
+          await goal.save({ session });
+
+          const progress = Math.round((goal.savedAmount / goal.targetAmount) * 100);
+          notif = await createNotification(
+            user._id,
+            goal.completed ? 'Goal Achieved! 🎉' : 'Goal Updated',
+            goal.completed
+              ? `Congratulations! You've reached your "${goal.name}" goal!`
+              : `$${applied} added to "${goal.name}" — ${progress}% complete`,
+            'GOAL_PROGRESS',
+            goal._id,
+            session
+          );
+        });
+
+        // ── Side effects: ONLY after the transaction commits ──────────────
+        emitToUser(io, user._id.toString(), 'goal_updated', {
+          goal: fmtGoal(goal.toObject()),
+          newBalance,
+          notification: fmtNotif(notif.toObject()),
+        });
+
+        return fmtGoal(goal.toObject());
+      } finally {
+        await session.endSession();
+      }
     },
 
     deleteGoal: async (_, { goalId }, { user }) => {
@@ -394,7 +513,7 @@ const resolvers = {
         { read: true },
         { new: true }
       ).lean();
-      if (!n) throw new Error('Notification not found');
+      if (!n) throw notFound('Notification not found');
       return fmtNotif(n);
     },
 

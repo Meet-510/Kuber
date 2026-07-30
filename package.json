@@ -1,13 +1,15 @@
 {
-  "name": "neobanking",
+  "name": "kuber",
   "version": "1.0.0",
-  "description": "NeoBanking — automated dev runner",
+  "description": "Kuber — digital banking platform (automated dev runner)",
   "type": "module",
   "scripts": {
     "setup": "node setup.js",
-    "dev": "concurrently --names \"BACKEND,FRONTEND\" --prefix-colors \"magenta,cyan\" \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "dev": "concurrently --names \"BACKEND,FRONTEND\" --prefix-colors \"magenta,cyan\" \"npm run dev --prefix Backend\" \"npm run dev --prefix Frontend\"",
     "start": "npm run setup && npm run dev",
-    "install:all": "npm install --prefix backend && npm install --prefix frontend"
+    "install:all": "npm install --prefix Backend && npm install --prefix Frontend",
+    "lint": "npm run lint --prefix Backend && npm run lint --prefix Frontend",
+    "test": "npm test --prefix Backend"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

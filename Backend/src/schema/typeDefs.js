@@ -70,6 +70,14 @@ const typeDefs = `#graphql
     received: Float!
   }
 
+  # Paginated transaction result — exposes enough metadata for the client
+  # to build real pagination (offset-based) instead of guessing.
+  type TransactionPage {
+    items: [Transaction!]!
+    totalCount: Int!
+    hasMore: Boolean!
+  }
+
   enum TransactionStatus {
     PENDING
     COMPLETED
@@ -92,7 +100,7 @@ const typeDefs = `#graphql
   type Query {
     getMe: User
     getAccounts: [Account!]!
-    getTransactions(limit: Int, offset: Int): [Transaction!]!
+    getTransactions(limit: Int, offset: Int): TransactionPage!
     getGoals: [Goal!]!
     getNotifications(limit: Int): [Notification!]!
     getSpendingAnalytics: [SpendingData!]!
@@ -101,7 +109,12 @@ const typeDefs = `#graphql
   type Mutation {
     registerUser(name: String!, email: String!, password: String!): AuthPayload!
     loginUser(email: String!, password: String!): AuthPayload!
-    sendTransfer(recipientEmail: String!, amount: Float!, message: String): Transaction!
+    sendTransfer(
+      recipientEmail: String!
+      amount: Float!
+      message: String
+      idempotencyKey: String
+    ): Transaction!
     createGoal(name: String!, targetAmount: Float!, deadline: String, color: String, icon: String): Goal!
     addToGoal(goalId: ID!, amount: Float!): Goal!
     deleteGoal(goalId: ID!): Boolean!

@@ -31,7 +31,9 @@ export default function SendMoney() {
     if (!form.recipientEmail) return toast.error('Recipient email is required');
     if (!amount || amount <= 0) return toast.error('Enter a valid amount');
     if (amount > balance) return toast.error('Insufficient balance');
-    sendTransfer({ variables: { ...form, amount } });
+    // Unique per submit — makes the transfer safe to retry without double-sending.
+    const idempotencyKey = crypto.randomUUID();
+    sendTransfer({ variables: { ...form, amount, idempotencyKey } });
   };
 
   const resetForm = () => setResult(null);

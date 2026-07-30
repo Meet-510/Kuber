@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# NeoBanking — full startup script (macOS / Linux)
+# Kuber — full startup script (macOS / Linux)
 set -e
 
 CYAN='\033[0;36m'
@@ -10,12 +10,12 @@ RED='\033[0;31m'
 RESET='\033[0m'
 
 echo ""
-echo -e "${MAGENTA} ███╗   ██╗███████╗ ██████╗ ${RESET}"
-echo -e "${MAGENTA} ████╗  ██║██╔════╝██╔═══██╗${RESET}"
-echo -e "${MAGENTA} ██╔██╗ ██║█████╗  ██║   ██║${RESET}"
-echo -e "${MAGENTA} ██║╚██╗██║██╔══╝  ██║   ██║${RESET}"
-echo -e "${MAGENTA} ██║ ╚████║███████╗╚██████╔╝${RESET}"
-echo -e "${MAGENTA} ╚═╝  ╚═══╝╚══════╝ ╚═════╝  Banking${RESET}"
+echo -e "${MAGENTA} ██╗  ██╗██╗   ██╗██████╗ ███████╗██████╗ ${RESET}"
+echo -e "${MAGENTA} ██║ ██╔╝██║   ██║██╔══██╗██╔════╝██╔══██╗${RESET}"
+echo -e "${MAGENTA} █████╔╝ ██║   ██║██████╔╝█████╗  ██████╔╝${RESET}"
+echo -e "${MAGENTA} ██╔═██╗ ██║   ██║██╔══██╗██╔══╝  ██╔══██╗${RESET}"
+echo -e "${MAGENTA} ██║  ██╗╚██████╔╝██████╔╝███████╗██║  ██║${RESET}"
+echo -e "${MAGENTA} ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝  Digital Banking${RESET}"
 echo ""
 
 # ── Check Node.js ──────────────────────────────────────────────────────────────
@@ -57,5 +57,5 @@ npx concurrently \
   --names "BACKEND,FRONTEND" \
   --prefix-colors "magenta,cyan" \
   --kill-others-on-fail \
-  "npm run dev --prefix backend" \
-  "npm run dev --prefix frontend"
+  "npm run dev --prefix Backend" \
+  "npm run dev --prefix Frontend"

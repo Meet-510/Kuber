@@ -13,6 +13,9 @@ const FILTERS = [
   { label: 'Pending',  value: 'pending' },
 ];
 
+// Stable reference so useMemo deps don't change on every render.
+const EMPTY = [];
+
 export default function Transactions() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
@@ -22,7 +25,10 @@ export default function Transactions() {
     variables: { limit: 30, offset: 0 },
   });
 
-  const allTxs = data?.getTransactions ?? [];
+  const page = data?.getTransactions;
+  const allTxs = page?.items ?? EMPTY;
+  const totalCount = page?.totalCount ?? 0;
+  const hasMore = page?.hasMore ?? false;
 
   const filtered = useMemo(() => {
     return allTxs.filter((tx) => {
@@ -50,7 +56,7 @@ export default function Transactions() {
       <div className="max-w-3xl mx-auto animate-fade-in">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-100">Transactions</h1>
-          <p className="mt-0.5 text-sm text-gray-500">{allTxs.length} total transactions</p>
+          <p className="mt-0.5 text-sm text-gray-500">{totalCount} total transactions</p>
         </div>
 
         {/* Search + Filter bar */}
@@ -117,11 +123,9 @@ export default function Transactions() {
         </div>
 
         {/* Load more */}
-        {allTxs.length >= 30 && (
+        {hasMore && (
           <button
-            onClick={() =>
-              fetchMore({ variables: { limit: 30, offset: allTxs.length } })
-            }
+            onClick={() => fetchMore({ variables: { limit: 30, offset: allTxs.length } })}
             className="btn-secondary w-full mt-4"
           >
             Load more

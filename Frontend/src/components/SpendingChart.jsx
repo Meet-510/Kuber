@@ -46,24 +46,24 @@ export default function SpendingChart() {
       <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="gradSent" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#f87171" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#f87171" stopOpacity={0} />
+            <stop offset="5%" stopColor="#b4453c" stopOpacity={0.3} />
+            <stop offset="95%" stopColor="#b4453c" stopOpacity={0} />
           </linearGradient>
           <linearGradient id="gradReceived" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#34d399" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#34d399" stopOpacity={0} />
+            <stop offset="5%" stopColor="#1f6b44" stopOpacity={0.3} />
+            <stop offset="95%" stopColor="#1f6b44" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-        <XAxis dataKey="month" tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
-        <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#e7e3d9" vertical={false} />
+        <XAxis dataKey="month" tick={{ fill: '#837f75', fontSize: 12 }} axisLine={false} tickLine={false} />
+        <YAxis tick={{ fill: '#837f75', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
         <Tooltip content={<CustomTooltip />} />
         <Legend
-          wrapperStyle={{ fontSize: '12px', color: '#94a3b8', paddingTop: '8px' }}
-          formatter={(value) => <span style={{ color: '#94a3b8', textTransform: 'capitalize' }}>{value}</span>}
+          wrapperStyle={{ fontSize: '12px', color: '#6e6b62', paddingTop: '8px' }}
+          formatter={(value) => <span style={{ color: '#6e6b62', textTransform: 'capitalize' }}>{value}</span>}
         />
-        <Area type="monotone" dataKey="sent" stroke="#f87171" strokeWidth={2} fill="url(#gradSent)" dot={false} />
-        <Area type="monotone" dataKey="received" stroke="#34d399" strokeWidth={2} fill="url(#gradReceived)" dot={false} />
+        <Area type="monotone" dataKey="sent" stroke="#b4453c" strokeWidth={2} fill="url(#gradSent)" dot={false} />
+        <Area type="monotone" dataKey="received" stroke="#1f6b44" strokeWidth={2} fill="url(#gradReceived)" dot={false} />
       </AreaChart>
     </ResponsiveContainer>
   );
