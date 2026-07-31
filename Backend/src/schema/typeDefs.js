@@ -5,7 +5,6 @@ const typeDefs = `#graphql
     email: String!
     avatar: String
     accounts: [Account!]!
-    goals: [Goal!]!
     notifications: [Notification!]!
     unreadNotifications: Int!
     createdAt: String!
@@ -34,20 +33,6 @@ const typeDefs = `#graphql
     createdAt: String!
   }
 
-  type Goal {
-    id: ID!
-    userId: ID!
-    name: String!
-    targetAmount: Float!
-    savedAmount: Float!
-    progress: Float!
-    deadline: String
-    color: String!
-    icon: String!
-    completed: Boolean!
-    createdAt: String!
-  }
-
   type Notification {
     id: ID!
     userId: ID!
@@ -64,14 +49,12 @@ const typeDefs = `#graphql
     user: User!
   }
 
-  type SpendingData {
-    month: String!
-    sent: Float!
-    received: Float!
+  # Result of a recipient email lookup before a transfer is sent.
+  type RecipientLookup {
+    exists: Boolean!
+    name: String
   }
 
-  # Paginated transaction result — exposes enough metadata for the client
-  # to build real pagination (offset-based) instead of guessing.
   type TransactionPage {
     items: [Transaction!]!
     totalCount: Int!
@@ -92,8 +75,6 @@ const typeDefs = `#graphql
   enum NotificationType {
     TRANSFER_SENT
     TRANSFER_RECEIVED
-    TRANSFER_PENDING
-    GOAL_PROGRESS
     SYSTEM
   }
 
@@ -101,23 +82,37 @@ const typeDefs = `#graphql
     getMe: User
     getAccounts: [Account!]!
     getTransactions(limit: Int, offset: Int): TransactionPage!
-    getGoals: [Goal!]!
     getNotifications(limit: Int): [Notification!]!
-    getSpendingAnalytics: [SpendingData!]!
+    lookupRecipient(email: String!): RecipientLookup!
+
+    # Dev convenience: returns the most recent plaintext OTP so the frontend
+    # can auto-fill the code without SMTP. Always null in production.
+    _devPeekOtp(email: String!): String
   }
 
   type Mutation {
-    registerUser(name: String!, email: String!, password: String!): AuthPayload!
+    # ── Auth (password login + OTP-verified signup) ─────────────────────────
     loginUser(email: String!, password: String!): AuthPayload!
+
+    # Register: send OTP to the email; account is NOT created until the OTP
+    # is verified. Payload carries email + name + password so verifyRegister
+    # can create the row atomically.
+    requestRegisterOtp(email: String!, name: String!, password: String!): Boolean!
+    verifyRegisterOtp(email: String!, name: String!, password: String!, code: String!): AuthPayload!
+
+    # Forgot / reset password — link-based, mirrors Eventra
+    requestPasswordReset(email: String!): Boolean!
+    resetPassword(id: ID!, token: String!, password: String!): Boolean!
+
+    logout: Boolean!
+
+    # ── App mutations ───────────────────────────────────────────────────────
     sendTransfer(
       recipientEmail: String!
       amount: Float!
       message: String
       idempotencyKey: String
     ): Transaction!
-    createGoal(name: String!, targetAmount: Float!, deadline: String, color: String, icon: String): Goal!
-    addToGoal(goalId: ID!, amount: Float!): Goal!
-    deleteGoal(goalId: ID!): Boolean!
     markNotificationRead(notificationId: ID!): Notification!
     markAllNotificationsRead: Boolean!
     updateProfile(name: String, avatar: String): User!

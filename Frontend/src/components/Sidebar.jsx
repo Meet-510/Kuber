@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, ArrowUpRight, ClipboardList, Target,
+  LayoutDashboard, ArrowUpRight, ClipboardList,
   User, LogOut, Landmark,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore.js';
@@ -10,7 +10,6 @@ const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/send',      icon: ArrowUpRight,    label: 'Send Money' },
   { to: '/transactions', icon: ClipboardList, label: 'Transactions' },
-  { to: '/goals',     icon: Target,          label: 'Goals' },
   { to: '/profile',   icon: User,            label: 'Profile' },
 ];
 
@@ -18,9 +17,9 @@ export default function Sidebar({ onClose }) {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login', { replace: true });
   };
 
   return (

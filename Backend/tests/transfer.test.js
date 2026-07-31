@@ -38,15 +38,14 @@ describe('sendTransfer', () => {
     ).rejects.toThrow(/yourself/);
   });
 
-  it('creates a PENDING transfer when the recipient is not registered', async () => {
+  it('refuses to send to an unregistered recipient and leaves funds untouched', async () => {
     const { user: alice, account: aliceAcc } = await makeUser({ email: 'alice@example.com' });
 
-    const tx = await send(alice, { recipientEmail: 'ghost@example.com', amount: 150 });
-
-    expect(tx.status).toBe('PENDING');
-    expect(await balanceOf(aliceAcc._id)).toBe(850); // sender still debited
-    const stored = await Transaction.findOne({ receiverEmail: 'ghost@example.com' });
-    expect(stored.pendingToken).toBeTruthy();
+    await expect(
+      send(alice, { recipientEmail: 'ghost@example.com', amount: 150 })
+    ).rejects.toThrow(/not registered/);
+    expect(await balanceOf(aliceAcc._id)).toBe(1000);
+    expect(await Transaction.countDocuments({})).toBe(0);
   });
 
   it('is idempotent: replaying the same key does not move money twice', async () => {

@@ -11,6 +11,8 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Only hash when the caller sets/changes the password — prevents double-hashing
+// on unrelated saves (e.g. avatar update, name change).
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 12);
@@ -21,6 +23,7 @@ userSchema.methods.comparePassword = function (candidate) {
   return bcrypt.compare(candidate, this.password);
 };
 
+// Serializer sink: never leak the password hash back to a GraphQL response.
 userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.password;

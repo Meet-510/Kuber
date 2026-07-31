@@ -14,6 +14,7 @@ import resolvers from './resolvers/index.js';
 import { getUserFromToken } from './middleware/auth.js';
 import { apiLimiter } from './middleware/rateLimit.js';
 import { setupSocketHandlers } from './services/socketService.js';
+import { initEmail, getTransportMode } from './services/emailService.js';
 
 const env = loadEnv();
 const { json } = bodyParser;
@@ -60,17 +61,21 @@ async function start() {
       context: async ({ req }) => ({
         user: await getUserFromToken(req),
         io,
+        req,
       }),
     })
   );
 
   app.get('/health', (_, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
 
+  initEmail(); // warm the transport so mode is logged before we start listening
+
   httpServer.listen(env.PORT, () => {
     logger.info(`🏦 Kuber API ready`);
     logger.info(`🚀 GraphQL:  http://localhost:${env.PORT}/graphql`);
     logger.info(`🔌 Socket.IO ready`);
     logger.info(`🌍 Env: ${env.NODE_ENV}`);
+    logger.info(`📮 Email mode: ${getTransportMode()}`);
   });
 }
 

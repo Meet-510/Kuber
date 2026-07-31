@@ -37,9 +37,9 @@ export default function Profile() {
     updateProfile({ variables: { name: newName.trim() } });
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login', { replace: true });
   };
 
   return (

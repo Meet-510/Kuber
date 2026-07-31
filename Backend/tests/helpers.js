@@ -10,7 +10,7 @@ export const makeUser = async ({
 } = {}) => {
   const user = await new User({ name, email, password }).save();
   const account = await new Account({ userId: user._id, balance }).save();
-  return { user: user.toObject(), account };
+  return { user: user.toObject(), account, password };
 };
 
 export const balanceOf = async (accountId) => {

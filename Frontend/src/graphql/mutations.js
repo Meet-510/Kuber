@@ -1,18 +1,6 @@
 import { gql } from '@apollo/client';
 
-export const REGISTER_USER = gql`
-  mutation RegisterUser($name: String!, $email: String!, $password: String!) {
-    registerUser(name: $name, email: $email, password: $password) {
-      token
-      user {
-        id
-        name
-        email
-        avatar
-      }
-    }
-  }
-`;
+// ── Auth (password login + OTP-verified signup + forgot-password link) ────
 
 export const LOGIN_USER = gql`
   mutation LoginUser($email: String!, $password: String!) {
@@ -27,6 +15,53 @@ export const LOGIN_USER = gql`
     }
   }
 `;
+
+// Step 1 of signup — send the OTP; user is NOT created until step 2.
+export const REQUEST_REGISTER_OTP = gql`
+  mutation RequestRegisterOtp($email: String!, $name: String!, $password: String!) {
+    requestRegisterOtp(email: $email, name: $name, password: $password)
+  }
+`;
+
+// Step 2 — verify OTP and create the account atomically.
+export const VERIFY_REGISTER_OTP = gql`
+  mutation VerifyRegisterOtp(
+    $email: String!
+    $name: String!
+    $password: String!
+    $code: String!
+  ) {
+    verifyRegisterOtp(email: $email, name: $name, password: $password, code: $code) {
+      token
+      user {
+        id
+        name
+        email
+        avatar
+      }
+    }
+  }
+`;
+
+export const REQUEST_PASSWORD_RESET = gql`
+  mutation RequestPasswordReset($email: String!) {
+    requestPasswordReset(email: $email)
+  }
+`;
+
+export const RESET_PASSWORD = gql`
+  mutation ResetPassword($id: ID!, $token: String!, $password: String!) {
+    resetPassword(id: $id, token: $token, password: $password)
+  }
+`;
+
+export const LOGOUT = gql`
+  mutation Logout {
+    logout
+  }
+`;
+
+// ── App mutations ──────────────────────────────────────────────────────────
 
 export const SEND_TRANSFER = gql`
   mutation SendTransfer(
@@ -49,53 +84,6 @@ export const SEND_TRANSFER = gql`
       message
       createdAt
     }
-  }
-`;
-
-export const CREATE_GOAL = gql`
-  mutation CreateGoal(
-    $name: String!
-    $targetAmount: Float!
-    $deadline: String
-    $color: String
-    $icon: String
-  ) {
-    createGoal(
-      name: $name
-      targetAmount: $targetAmount
-      deadline: $deadline
-      color: $color
-      icon: $icon
-    ) {
-      id
-      name
-      targetAmount
-      savedAmount
-      progress
-      deadline
-      color
-      icon
-      completed
-    }
-  }
-`;
-
-export const ADD_TO_GOAL = gql`
-  mutation AddToGoal($goalId: ID!, $amount: Float!) {
-    addToGoal(goalId: $goalId, amount: $amount) {
-      id
-      name
-      savedAmount
-      targetAmount
-      progress
-      completed
-    }
-  }
-`;
-
-export const DELETE_GOAL = gql`
-  mutation DeleteGoal($goalId: ID!) {
-    deleteGoal(goalId: $goalId)
   }
 `;
 

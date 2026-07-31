@@ -2,7 +2,10 @@ import { describe, it, expect } from 'vitest';
 import {
   validate,
   transferSchema,
-  registerSchema,
+  emailOnlySchema,
+  loginSchema,
+  verifyRegisterSchema,
+  resetPasswordSchema,
 } from '../src/utils/validators.js';
 
 describe('transferSchema', () => {
@@ -37,16 +40,31 @@ describe('transferSchema', () => {
   });
 });
 
-describe('registerSchema', () => {
-  it('rejects a short password', () => {
-    expect(() =>
-      validate(registerSchema, { name: 'A', email: 'a@b.com', password: '123' })
-    ).toThrow(/at least 6/);
+describe('auth validators', () => {
+  it('emailOnlySchema normalizes and rejects bad emails', () => {
+    expect(validate(emailOnlySchema, { email: 'A@B.com ' }).email).toBe('a@b.com');
+    expect(() => validate(emailOnlySchema, { email: 'nope' })).toThrow(/valid email/);
   });
 
-  it('requires a name', () => {
+  it('loginSchema requires a non-empty password', () => {
+    expect(() => validate(loginSchema, { email: 'a@b.com', password: '' })).toThrow(/required/);
+    expect(validate(loginSchema, { email: 'a@b.com', password: 'x' }).email).toBe('a@b.com');
+  });
+
+  it('verifyRegisterSchema requires name + 6-digit code + strong password', () => {
+    const good = { email: 'a@b.com', name: 'A', password: 'secret123', code: '123456' };
+    expect(validate(verifyRegisterSchema, good).code).toBe('123456');
+    expect(() => validate(verifyRegisterSchema, { ...good, code: 'abcdef' })).toThrow(/6-digit/);
+    expect(() => validate(verifyRegisterSchema, { ...good, password: '123' })).toThrow(/at least 6/);
+    expect(() => validate(verifyRegisterSchema, { ...good, name: '   ' })).toThrow(/Name is required/);
+  });
+
+  it('resetPasswordSchema requires id + token + strong password', () => {
     expect(() =>
-      validate(registerSchema, { name: '   ', email: 'a@b.com', password: '123456' })
-    ).toThrow(/Name is required/);
+      validate(resetPasswordSchema, { id: '1', token: 't', password: '123' })
+    ).toThrow(/at least 6/);
+    expect(
+      validate(resetPasswordSchema, { id: '1', token: 't', password: 'new-secret' }).password
+    ).toBe('new-secret');
   });
 });

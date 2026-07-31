@@ -16,17 +16,20 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
-const errorLink = onError(({ graphQLErrors, networkError }) => {
-  if (graphQLErrors) {
-    for (const { message } of graphQLErrors) {
-      if (message === 'Authentication required') {
-        localStorage.removeItem('kuber_token');
-        window.location.href = '/login';
-      }
-    }
-  }
-  if (networkError) {
-    console.error('Network error:', networkError);
+// When the server refuses auth (logged out, session revoked, idle-expired),
+// tear down local state and bounce to /login. We use a full navigation so any
+// in-flight React queries are cancelled cleanly. Skipped for the LOGOUT
+// mutation itself — that call is *expected* to run against a valid session
+// and shouldn't loop if it happens to race with an expiry.
+const errorLink = onError(({ graphQLErrors, operation }) => {
+  if (!graphQLErrors || operation.operationName === 'Logout') return;
+  const unauth = graphQLErrors.some(
+    (e) => e.extensions?.code === 'UNAUTHENTICATED' || e.message === 'Authentication required'
+  );
+  if (unauth && localStorage.getItem('kuber_token')) {
+    localStorage.removeItem('kuber_token');
+    localStorage.removeItem('kuber_auth');
+    window.location.href = '/login';
   }
 });
 

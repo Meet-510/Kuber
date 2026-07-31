@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { disconnectSocket } from '../lib/socket.js';
 import { client } from '../lib/apolloClient.js';
+import { LOGOUT } from '../graphql/mutations.js';
 
 export const useAuthStore = create(
   persist(
@@ -18,10 +19,21 @@ export const useAuthStore = create(
       updateUser: (updates) =>
         set((state) => ({ user: { ...state.user, ...updates } })),
 
-      logout: () => {
+      /**
+       * Sign out. Best-effort revokes the server session before clearing
+       * local state so a stolen token can't outlive the browser tab.
+       * Never blocks the UI on a network failure — the client-side clear
+       * always happens.
+       */
+      logout: async () => {
+        try {
+          await client.mutate({ mutation: LOGOUT, fetchPolicy: 'no-cache' });
+        } catch {
+          // Session may already be revoked (idle-expired); ignore.
+        }
         localStorage.removeItem('kuber_token');
         disconnectSocket();
-        client.clearStore();
+        await client.clearStore();
         set({ user: null, token: null, isAuthenticated: false });
       },
     }),

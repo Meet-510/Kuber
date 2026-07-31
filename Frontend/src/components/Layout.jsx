@@ -1,22 +1,40 @@
-import { useState, useEffect, useRef } from 'react';
-import { Menu, Bell, X } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Menu, Bell } from 'lucide-react';
 import { useQuery } from '@apollo/client';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore.js';
 import { connectSocket } from '../lib/socket.js';
 import { client } from '../lib/apolloClient.js';
 import { GET_ME } from '../graphql/queries.js';
+import { useInactivityLogout } from '../hooks/useInactivityLogout.js';
 import Sidebar from './Sidebar.jsx';
 import NotificationPanel from './NotificationPanel.jsx';
+import InactivityModal from './InactivityModal.jsx';
 import toast from 'react-hot-toast';
 
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const { token } = useAuthStore();
+  const { token, logout } = useAuthStore();
+  const navigate = useNavigate();
   const notifRef = useRef(null);
 
   const { data } = useQuery(GET_ME, { skip: !token });
   const unread = data?.getMe?.unreadNotifications ?? 0;
+
+  const handleTimeoutLogout = useCallback(
+    async (reason) => {
+      await logout();
+      if (reason === 'inactivity') toast('Signed out — inactive too long', { icon: '⏱️' });
+      navigate('/login', { replace: true });
+    },
+    [logout, navigate]
+  );
+
+  const { warningOpen, secondsLeft, dismissWarning } = useInactivityLogout({
+    enabled: !!token,
+    onLogout: handleTimeoutLogout,
+  });
 
   // Connect socket and set up real-time event handlers
   useEffect(() => {
@@ -33,28 +51,12 @@ export default function Layout({ children }) {
       client.refetchQueries({ include: [GET_ME, 'GetTransactions', 'GetNotifications'] });
     };
 
-    const handleTransferPending = ({ transaction, newBalance, notification }) => {
-      toast(`⏳ Transfer pending — recipient hasn't registered yet`, { duration: 5000 });
-      client.refetchQueries({ include: [GET_ME, 'GetTransactions', 'GetNotifications'] });
-    };
-
-    const handleGoalUpdated = ({ goal, newBalance, notification }) => {
-      if (goal.completed) {
-        toast.success(`🎉 Goal "${goal.name}" achieved!`, { duration: 5000 });
-      }
-      client.refetchQueries({ include: [GET_ME, 'GetGoals', 'GetNotifications'] });
-    };
-
     socket.on('transfer_received', handleTransferReceived);
     socket.on('transfer_sent', handleTransferSent);
-    socket.on('transfer_pending', handleTransferPending);
-    socket.on('goal_updated', handleGoalUpdated);
 
     return () => {
       socket.off('transfer_received', handleTransferReceived);
       socket.off('transfer_sent', handleTransferSent);
-      socket.off('transfer_pending', handleTransferPending);
-      socket.off('goal_updated', handleGoalUpdated);
     };
   }, [token]);
 
@@ -109,7 +111,7 @@ export default function Layout({ children }) {
             >
               <Bell className="h-5 w-5" />
               {unread > 0 && (
-                <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-purple-600 text-[10px] font-bold text-white">
+                <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#1f5c3d] text-[10px] font-bold text-[#f2f0e9]">
                   {unread > 9 ? '9+' : unread}
                 </span>
               )}
@@ -127,6 +129,13 @@ export default function Layout({ children }) {
         {/* Page content */}
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
       </div>
+
+      <InactivityModal
+        open={warningOpen}
+        secondsLeft={secondsLeft}
+        onStay={dismissWarning}
+        onLogout={() => handleTimeoutLogout('user')}
+      />
     </div>
   );
 }

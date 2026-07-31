@@ -40,23 +40,6 @@ export const GET_TRANSACTIONS = gql`
   }
 `;
 
-export const GET_GOALS = gql`
-  query GetGoals {
-    getGoals {
-      id
-      name
-      targetAmount
-      savedAmount
-      progress
-      deadline
-      color
-      icon
-      completed
-      createdAt
-    }
-  }
-`;
-
 export const GET_NOTIFICATIONS = gql`
   query GetNotifications($limit: Int) {
     getNotifications(limit: $limit) {
@@ -71,12 +54,19 @@ export const GET_NOTIFICATIONS = gql`
   }
 `;
 
-export const GET_SPENDING_ANALYTICS = gql`
-  query GetSpendingAnalytics {
-    getSpendingAnalytics {
-      month
-      sent
-      received
+export const LOOKUP_RECIPIENT = gql`
+  query LookupRecipient($email: String!) {
+    lookupRecipient(email: $email) {
+      exists
+      name
     }
+  }
+`;
+
+// Dev convenience — returns the plaintext OTP so we don't need SMTP set up
+// during development. Returns null in production.
+export const DEV_PEEK_OTP = gql`
+  query DevPeekOtp($email: String!) {
+    _devPeekOtp(email: $email)
   }
 `;

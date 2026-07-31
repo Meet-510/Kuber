@@ -7,7 +7,7 @@ const notificationSchema = new mongoose.Schema(
     message: { type: String, required: true },
     type: {
       type: String,
-      enum: ['TRANSFER_SENT', 'TRANSFER_RECEIVED', 'TRANSFER_PENDING', 'GOAL_PROGRESS', 'SYSTEM'],
+      enum: ['TRANSFER_SENT', 'TRANSFER_RECEIVED', 'SYSTEM'],
       default: 'SYSTEM',
     },
     read: { type: Boolean, default: false },

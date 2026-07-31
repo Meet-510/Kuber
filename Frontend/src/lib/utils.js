@@ -40,8 +40,6 @@ export const getNotificationIcon = (type) => {
   switch (type) {
     case 'TRANSFER_SENT':     return '💸';
     case 'TRANSFER_RECEIVED': return '💰';
-    case 'TRANSFER_PENDING':  return '⏳';
-    case 'GOAL_PROGRESS':     return '🎯';
     default:                  return '🔔';
   }
 };
