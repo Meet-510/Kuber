@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
-import { ArrowLeft, Check, Eye, EyeOff, Landmark, Mail } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, Eye, EyeOff, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { REQUEST_REGISTER_OTP, VERIFY_REGISTER_OTP } from '../graphql/mutations.js';
 import { useAuthStore } from '../store/authStore.js';
@@ -92,184 +92,189 @@ export default function Register() {
   const perks = [
     '$1,000 CAD welcome balance',
     'Instant e-transfers',
-    'Real-time transfer notifications',
+    'Real-time notifications',
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-950">
-      {/* Left panel — hidden on mobile */}
-      <div className="hidden lg:flex lg:flex-1 lg:flex-col lg:justify-center lg:px-16 border-r border-gray-800">
-        <div>
-          <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-[#1f5c3d]">
-            <Landmark className="h-7 w-7 text-[#f2f0e9]" />
-          </div>
-          <h2 className="text-4xl font-semibold text-gray-100 leading-tight tracking-tight">
-            Banking built for<br />
-            <span className="gradient-text">the modern age</span>
+    <div className="min-h-screen bg-paper">
+      {/* Header wordmark */}
+      <div className="mx-auto max-w-6xl px-6 py-8 md:px-10">
+        <Link to="/login" className="serif text-2xl text-ink">
+          Kuber<span className="serif-italic text-ink-3">.</span>
+        </Link>
+      </div>
+
+      <div className="mx-auto grid max-w-6xl gap-16 px-6 pt-8 md:grid-cols-12 md:gap-24 md:px-10 md:pt-16">
+        {/* Left — editorial pitch */}
+        <div className="hidden md:col-span-5 md:flex md:flex-col md:pt-8">
+          <p className="eyebrow mb-6">A new account</p>
+          <h2 className="serif text-6xl leading-[0.98] tracking-tight text-ink">
+            Banking, <br />
+            <span className="serif-italic text-ink-3">quietly done.</span>
           </h2>
-          <p className="mt-4 text-gray-400 max-w-sm">
-            Send money instantly and track every transaction — all in one place.
+          <p className="mt-6 max-w-sm text-base text-ink-3">
+            Send money instantly and track every transaction — all on one thoughtful surface.
           </p>
-          <ul className="mt-8 space-y-3">
+          <ul className="mt-10 space-y-4">
             {perks.map((p) => (
-              <li key={p} className="flex items-center gap-3 text-gray-300">
-                <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#1f5c3d]/15 text-[#1f5c3d]">
-                  <Check className="h-3 w-3" />
-                </span>
+              <li key={p} className="flex items-baseline gap-4 text-sm text-ink-3">
+                <span className="h-px w-6 bg-line-2" aria-hidden />
                 {p}
               </li>
             ))}
           </ul>
         </div>
-      </div>
 
-      {/* Right panel — form */}
-      <div className="flex flex-1 flex-col items-center justify-center px-4 py-12 lg:px-16">
-        <div className="w-full max-w-md">
-          <div className="mb-8 text-center lg:hidden">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-[#1f5c3d]">
-              <Landmark className="h-7 w-7 text-[#f2f0e9]" />
+        {/* Right — form */}
+        <div className="md:col-span-7 md:col-start-7">
+          <div className="max-w-md animate-fade-in">
+            <div className="mb-6 flex items-center gap-2">
+              {['form', 'code'].map((s, i) => (
+                <span
+                  key={s}
+                  className={`h-px w-8 transition-colors ${
+                    ['form', 'code'].indexOf(step) >= i ? 'bg-ink' : 'bg-line-2'
+                  }`}
+                />
+              ))}
+              <span className="ml-2 eyebrow">Step {['form', 'code'].indexOf(step) + 1} of 2</span>
             </div>
-          </div>
 
-          <div className="flex items-center justify-center gap-2 mb-5">
-            {['form', 'code'].map((s, i) => (
-              <span
-                key={s}
-                className={`h-1.5 w-8 rounded-full transition-colors ${
-                  ['form', 'code'].indexOf(step) >= i ? 'bg-[#1f5c3d]' : 'bg-gray-800'
-                }`}
-              />
-            ))}
-          </div>
+            <h1 className="serif text-5xl md:text-6xl leading-[0.98] tracking-tight text-ink">
+              {step === 'form' ? (
+                <>Create your <span className="serif-italic text-ink-3">account.</span></>
+              ) : (
+                <>Verify your <span className="serif-italic text-ink-3">email.</span></>
+              )}
+            </h1>
+            <p className="mt-4 text-base text-ink-3">
+              {step === 'form' ? (
+                'Free forever. No credit card required.'
+              ) : (
+                <>Sent to <span className="text-ink">{form.email}</span></>
+              )}
+            </p>
 
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-100 text-center">
-            {step === 'form' ? 'Create your account' : 'Verify your email'}
-          </h1>
-          <p className="mt-1 text-sm text-gray-500 text-center">
-            {step === 'form' ? (
-              'Free forever. No credit card required.'
-            ) : (
-              <>
-                Sent to <span className="text-gray-300 font-medium">{form.email}</span>
-              </>
-            )}
-          </p>
-
-          <div className="mt-6 card">
-            {step === 'form' && (
-              <form onSubmit={submitForm} className="space-y-5 animate-fade-in">
-                <div>
-                  <label className="label">Full name</label>
-                  <input
-                    type="text"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="input-field"
-                    placeholder="Alex Johnson"
-                    autoComplete="name"
-                    autoFocus
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="label">Email address</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-600" />
+            <div className="mt-12">
+              {step === 'form' && (
+                <form onSubmit={submitForm} className="space-y-6 animate-fade-in">
+                  <div>
+                    <label className="label">Full name</label>
                     <input
-                      type="email"
-                      value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      className="input-field pl-10"
-                      placeholder="you@example.com"
-                      autoComplete="email"
+                      type="text"
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      className="input-field"
+                      placeholder="Alex Johnson"
+                      autoComplete="name"
+                      autoFocus
                       required
                     />
                   </div>
-                </div>
 
-                <div>
-                  <label className="label">Password</label>
-                  <div className="relative">
-                    <input
-                      type={showPw ? 'text' : 'password'}
-                      value={form.password}
-                      onChange={(e) => setForm({ ...form, password: e.target.value })}
-                      className="input-field pr-11"
-                      placeholder="Min. 6 characters"
-                      autoComplete="new-password"
-                      minLength={6}
-                      required
-                    />
+                  <div>
+                    <label className="label">Email address</label>
+                    <div className="relative">
+                      <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-5" strokeWidth={1.5} />
+                      <input
+                        type="email"
+                        value={form.email}
+                        onChange={(e) => setForm({ ...form, email: e.target.value })}
+                        className="input-field pl-12"
+                        placeholder="you@example.com"
+                        autoComplete="email"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="label">Password</label>
+                    <div className="relative">
+                      <input
+                        type={showPw ? 'text' : 'password'}
+                        value={form.password}
+                        onChange={(e) => setForm({ ...form, password: e.target.value })}
+                        className="input-field pr-12"
+                        placeholder="Min. 6 characters"
+                        autoComplete="new-password"
+                        minLength={6}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPw(!showPw)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink transition-colors"
+                        aria-label={showPw ? 'Hide password' : 'Show password'}
+                      >
+                        {showPw ? <EyeOff className="h-4 w-4" strokeWidth={1.5} /> : <Eye className="h-4 w-4" strokeWidth={1.5} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button type="submit" disabled={sending} className="btn-primary group w-full">
+                    {sending ? 'Sending code…' : (
+                      <>
+                        Continue
+                        <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={1.5} />
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
+
+              {step === 'code' && (
+                <div className="space-y-6 animate-fade-in">
+                  <OtpInput
+                    value={code}
+                    onChange={setCode}
+                    onComplete={(full) => submitCode(full)}
+                    autoFocus
+                  />
+
+                  <button
+                    onClick={() => submitCode()}
+                    disabled={verifying || code.length !== 6}
+                    className="btn-primary w-full"
+                  >
+                    {verifying ? (
+                      <span className="flex items-center gap-2">
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border border-paper/60 border-t-transparent" />
+                        Creating account…
+                      </span>
+                    ) : (
+                      'Create account'
+                    )}
+                  </button>
+
+                  <div className="flex items-center justify-between text-sm">
                     <button
                       type="button"
-                      onClick={() => setShowPw(!showPw)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
-                      aria-label={showPw ? 'Hide password' : 'Show password'}
+                      onClick={() => { setStep('form'); setCode(''); }}
+                      className="flex items-center gap-1 text-ink-4 hover:text-ink transition-colors"
                     >
-                      {showPw ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      <ArrowLeft className="h-3.5 w-3.5" />
+                      Back
+                    </button>
+                    <button
+                      type="button"
+                      onClick={resend}
+                      disabled={cooldown > 0 || sending}
+                      className="text-ink-4 hover:text-accent transition-colors disabled:text-ink-5 disabled:cursor-not-allowed"
+                    >
+                      {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
                     </button>
                   </div>
                 </div>
+              )}
 
-                <button type="submit" disabled={sending} className="btn-primary w-full py-3 text-base">
-                  {sending ? 'Sending code…' : 'Continue'}
-                </button>
-              </form>
-            )}
-
-            {step === 'code' && (
-              <div className="space-y-5 animate-fade-in">
-                <OtpInput
-                  value={code}
-                  onChange={setCode}
-                  onComplete={(full) => submitCode(full)}
-                  autoFocus
-                />
-
-                <button
-                  onClick={() => submitCode()}
-                  disabled={verifying || code.length !== 6}
-                  className="btn-primary w-full py-3 text-base"
-                >
-                  {verifying ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-transparent" />
-                      Creating account…
-                    </span>
-                  ) : (
-                    'Create account'
-                  )}
-                </button>
-
-                <div className="flex items-center justify-between text-sm">
-                  <button
-                    type="button"
-                    onClick={() => { setStep('form'); setCode(''); }}
-                    className="flex items-center gap-1 text-gray-500 hover:text-gray-300 transition-colors"
-                  >
-                    <ArrowLeft className="h-3.5 w-3.5" />
-                    Back
-                  </button>
-                  <button
-                    type="button"
-                    onClick={resend}
-                    disabled={cooldown > 0 || sending}
-                    className="text-[#2c7a52] hover:text-[#1f5c3d] transition-colors disabled:text-gray-600 disabled:cursor-not-allowed"
-                  >
-                    {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <p className="mt-5 text-center text-sm text-gray-500">
-              Already have an account?{' '}
-              <Link to="/login" className="font-medium text-[#2c7a52] hover:text-[#1f5c3d] transition-colors">
-                Sign in
-              </Link>
-            </p>
+              <p className="mt-10 text-sm text-ink-4">
+                Already have an account?{' '}
+                <Link to="/login" className="text-ink hover:text-accent transition-colors underline underline-offset-4 decoration-line-2">
+                  Sign in
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       </div>

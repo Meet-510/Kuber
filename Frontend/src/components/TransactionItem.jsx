@@ -9,39 +9,36 @@ export default function TransactionItem({ tx }) {
   const counterpartyEmail = isSent ? tx.receiverEmail : tx.senderEmail;
 
   return (
-    <div className="flex items-center gap-4 rounded-xl p-3 hover:bg-gray-800/50 transition-colors duration-150">
-      {/* Avatar */}
-      <div
-        className={cn(
-          'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold',
-          isSent ? 'bg-red-500/15 text-red-400' : 'bg-emerald-500/15 text-emerald-400'
-        )}
-      >
-        {isSent ? <ArrowUpRight className="h-5 w-5" /> : <ArrowDownLeft className="h-5 w-5" />}
+    <div className="group flex items-center gap-5 border-t border-line py-5 transition-colors duration-150">
+      {/* Direction icon — hairline circle */}
+      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-line text-ink-3">
+        {isSent
+          ? <ArrowUpRight className="h-4 w-4" strokeWidth={1.5} />
+          : <ArrowDownLeft className="h-4 w-4" strokeWidth={1.5} />}
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-gray-200 truncate">{counterparty}</p>
+        <div className="flex items-baseline gap-2">
+          <p className="text-sm font-medium text-ink truncate">{counterparty}</p>
           <span className={cn('badge', getStatusColor(tx.status))}>
-            {tx.status === 'PENDING' ? <Clock className="mr-1 h-3 w-3" /> : null}
+            {tx.status === 'PENDING' ? <Clock className="mr-1 h-3 w-3" strokeWidth={1.5} /> : null}
             {tx.status.toLowerCase()}
           </span>
         </div>
-        <p className="text-xs text-gray-500 truncate">
+        <p className="mt-1 text-xs text-ink-4 truncate">
           {tx.message || counterpartyEmail} · {formatRelativeTime(tx.createdAt)}
         </p>
       </div>
 
-      {/* Amount */}
+      {/* Amount — serif for editorial weight */}
       <p
         className={cn(
-          'text-sm font-semibold flex-shrink-0',
+          'serif text-2xl leading-none tracking-tight flex-shrink-0',
           isSent ? 'text-red-400' : 'text-emerald-400'
         )}
       >
-        {isSent ? '-' : '+'}{formatCurrency(tx.amount)}
+        {isSent ? '−' : '+'}{formatCurrency(tx.amount)}
       </p>
     </div>
   );

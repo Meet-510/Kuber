@@ -3,7 +3,6 @@ import { useEffect, useRef } from 'react';
 /**
  * Six-slot OTP input. Auto-advances on digit entry, backspace-deletes into
  * the previous slot, and accepts a 6-digit paste that fills all slots at once.
- * `value` is a string of up to 6 digits; the parent owns state.
  */
 export default function OtpInput({ value, onChange, onComplete, autoFocus }) {
   const refs = useRef([]);
@@ -57,7 +56,7 @@ export default function OtpInput({ value, onChange, onComplete, autoFocus }) {
           value={d.trim()}
           onChange={(e) => handleChange(i, e)}
           onKeyDown={(e) => handleKey(i, e)}
-          className="h-14 w-12 rounded-[10px] border border-gray-700 bg-white text-center text-2xl font-mono font-medium text-gray-100 focus:border-[#1f5c3d] focus:outline-none focus:ring-1 focus:ring-[#1f5c3d]/40"
+          className="h-14 w-12 rounded-2xl border border-line-2 bg-paper text-center serif text-3xl text-ink focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 transition-colors"
         />
       ))}
     </div>

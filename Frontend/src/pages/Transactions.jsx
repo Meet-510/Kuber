@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@apollo/client';
-import { Search, ArrowUpRight, ArrowDownLeft, Clock, Filter } from 'lucide-react';
+import { Search, Filter } from 'lucide-react';
 import { GET_TRANSACTIONS } from '../graphql/queries.js';
 import { useAuthStore } from '../store/authStore.js';
 import TransactionItem from '../components/TransactionItem.jsx';
@@ -13,7 +13,6 @@ const FILTERS = [
   { label: 'Pending',  value: 'pending' },
 ];
 
-// Stable reference so useMemo deps don't change on every render.
 const EMPTY = [];
 
 export default function Transactions() {
@@ -53,84 +52,98 @@ export default function Transactions() {
 
   return (
     <Layout>
-      <div className="max-w-3xl mx-auto animate-fade-in">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-100">Transactions</h1>
-          <p className="mt-0.5 text-sm text-gray-500">{totalCount} total transactions</p>
-        </div>
-
-        {/* Search + Filter bar */}
-        <div className="mb-4 space-y-3">
-          <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="input-field pl-10"
-              placeholder="Search by name, email, or message…"
-            />
+      <div className="mx-auto max-w-5xl animate-fade-in">
+        {/* Header */}
+        <header className="grid gap-8 md:grid-cols-12">
+          <div className="md:col-span-3">
+            <p className="eyebrow">{totalCount} total</p>
           </div>
-
-          <div className="flex gap-2">
-            {FILTERS.map((f) => (
-              <button
-                key={f.value}
-                onClick={() => setFilter(f.value)}
-                className={`rounded-lg px-3.5 py-1.5 text-sm font-medium transition-all ${
-                  filter === f.value
-                    ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20'
-                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-200'
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
+          <div className="md:col-span-9">
+            <h1 className="serif text-5xl md:text-7xl leading-[0.98] tracking-tight text-ink">
+              Every <span className="serif-italic text-ink-3">transaction.</span>
+            </h1>
           </div>
-        </div>
+        </header>
 
-        {/* Transaction list */}
-        <div className="card">
-          {loading ? (
-            <div className="space-y-3 p-2">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="flex items-center gap-4 p-3">
-                  <div className="h-10 w-10 animate-pulse rounded-full bg-gray-800" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-3.5 w-3/4 animate-pulse rounded bg-gray-800" />
-                    <div className="h-3 w-1/2 animate-pulse rounded bg-gray-800" />
+        {/* Search + filter */}
+        <section className="mt-16 grid gap-8 md:grid-cols-12">
+          <div className="md:col-span-3">
+            <p className="eyebrow">Filter</p>
+          </div>
+          <div className="md:col-span-9 space-y-4">
+            <div className="relative">
+              <Search className="absolute left-5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-5" strokeWidth={1.5} />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="input-field pl-12"
+                placeholder="Search by name, email, or message…"
+              />
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {FILTERS.map((f) => (
+                <button
+                  key={f.value}
+                  onClick={() => setFilter(f.value)}
+                  className={`rounded-full border px-4 py-1.5 text-xs font-medium transition-colors duration-200 ${
+                    filter === f.value
+                      ? 'border-ink bg-ink text-paper'
+                      : 'border-line text-ink-3 hover:border-ink hover:text-ink'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* List */}
+        <section className="mt-16 grid gap-8 md:grid-cols-12">
+          <div className="md:col-span-3">
+            <p className="eyebrow">Ledger</p>
+          </div>
+          <div className="md:col-span-9">
+            {loading ? (
+              <div className="space-y-3">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="flex items-center gap-4 border-t border-line py-5">
+                    <div className="h-10 w-10 animate-pulse rounded-full bg-line" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-3.5 w-3/4 animate-pulse rounded bg-line" />
+                      <div className="h-3 w-1/2 animate-pulse rounded bg-line" />
+                    </div>
+                    <div className="h-4 w-20 animate-pulse rounded bg-line" />
                   </div>
-                  <div className="h-4 w-20 animate-pulse rounded bg-gray-800" />
-                </div>
-              ))}
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="py-16 text-center text-gray-500">
-              <Filter className="mx-auto mb-3 h-10 w-10 opacity-30" />
-              <p className="text-sm">
-                {search || filter !== 'all' ? 'No transactions match your filter' : 'No transactions yet'}
-              </p>
-            </div>
-          ) : (
-            <div className="-mx-3 divide-y divide-gray-800/50">
-              {filtered.map((tx) => (
-                <div key={tx.id} className="px-3">
-                  <TransactionItem tx={tx} />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="border-t border-line py-20 text-center text-ink-4">
+                <Filter className="mx-auto mb-3 h-8 w-8 opacity-40" strokeWidth={1.5} />
+                <p className="text-sm">
+                  {search || filter !== 'all' ? 'No transactions match your filter' : 'No transactions yet'}
+                </p>
+              </div>
+            ) : (
+              <div>
+                {filtered.map((tx) => (
+                  <TransactionItem key={tx.id} tx={tx} />
+                ))}
+              </div>
+            )}
 
-        {/* Load more */}
-        {hasMore && (
-          <button
-            onClick={() => fetchMore({ variables: { limit: 30, offset: allTxs.length } })}
-            className="btn-secondary w-full mt-4"
-          >
-            Load more
-          </button>
-        )}
+            {hasMore && (
+              <button
+                onClick={() => fetchMore({ variables: { limit: 30, offset: allTxs.length } })}
+                className="btn-secondary w-full mt-8"
+              >
+                Load more
+              </button>
+            )}
+          </div>
+        </section>
       </div>
     </Layout>
   );

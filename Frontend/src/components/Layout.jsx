@@ -36,18 +36,17 @@ export default function Layout({ children }) {
     onLogout: handleTimeoutLogout,
   });
 
-  // Connect socket and set up real-time event handlers
   useEffect(() => {
     if (!token) return;
     const socket = connectSocket(token);
 
-    const handleTransferReceived = ({ transaction, newBalance, senderName, amount, notification }) => {
-      toast.success(`💰 ${senderName} sent you $${amount} CAD!`, { duration: 5000 });
+    const handleTransferReceived = ({ senderName, amount }) => {
+      toast.success(`${senderName} sent you $${amount} CAD`, { duration: 5000 });
       client.refetchQueries({ include: [GET_ME, 'GetTransactions', 'GetNotifications'] });
     };
 
-    const handleTransferSent = ({ transaction, newBalance, notification }) => {
-      toast.success(`✅ Transfer sent successfully`, { duration: 3000 });
+    const handleTransferSent = () => {
+      toast.success('Transfer sent successfully', { duration: 3000 });
       client.refetchQueries({ include: [GET_ME, 'GetTransactions', 'GetNotifications'] });
     };
 
@@ -60,7 +59,6 @@ export default function Layout({ children }) {
     };
   }, [token]);
 
-  // Close notification panel on outside click
   useEffect(() => {
     const handler = (e) => {
       if (notifRef.current && !notifRef.current.contains(e.target)) {
@@ -72,7 +70,7 @@ export default function Layout({ children }) {
   }, [notifOpen]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-950">
+    <div className="flex h-screen overflow-hidden bg-paper">
       {/* Desktop sidebar */}
       <div className="hidden lg:flex lg:flex-shrink-0">
         <Sidebar />
@@ -82,7 +80,7 @@ export default function Layout({ children }) {
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-ink/30"
             onClick={() => setSidebarOpen(false)}
           />
           <div className="relative z-50 flex h-full w-64 flex-col">
@@ -93,33 +91,34 @@ export default function Layout({ children }) {
 
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top bar */}
-        <header className="flex items-center justify-between border-b border-gray-800 bg-gray-950 px-4 py-3 lg:px-6">
+        {/* Top bar — hairline only, no fill */}
+        <header className="flex items-center justify-between border-b border-line bg-paper px-6 py-4 lg:px-10">
           <button
-            className="rounded-lg p-2 text-gray-400 hover:bg-gray-800 hover:text-gray-200 lg:hidden transition-colors"
+            className="rounded-full p-2 text-ink-4 hover:text-ink transition-colors lg:hidden"
             onClick={() => setSidebarOpen(true)}
+            aria-label="Open menu"
           >
             <Menu className="h-5 w-5" />
           </button>
+          <div className="lg:hidden serif text-xl text-ink">Kuber</div>
           <div className="flex-1 lg:flex-none" />
 
           {/* Notification bell */}
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setNotifOpen(!notifOpen)}
-              className="relative rounded-lg p-2 text-gray-400 hover:bg-gray-800 hover:text-gray-200 transition-colors"
+              className="relative rounded-full p-2 text-ink-4 hover:text-ink transition-colors"
+              aria-label="Notifications"
             >
-              <Bell className="h-5 w-5" />
+              <Bell className="h-5 w-5" strokeWidth={1.5} />
               {unread > 0 && (
-                <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#1f5c3d] text-[10px] font-bold text-[#f2f0e9]">
-                  {unread > 9 ? '9+' : unread}
-                </span>
+                <span className="absolute right-1 top-1 flex h-2 w-2 rounded-full bg-accent" />
               )}
             </button>
 
             {/* Notification dropdown */}
             {notifOpen && (
-              <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 rounded-2xl border border-gray-800 bg-gray-900 shadow-2xl shadow-black/50 z-50 overflow-hidden animate-fade-in">
+              <div className="absolute right-0 top-full mt-3 w-80 sm:w-96 surface z-50 overflow-hidden animate-fade-in">
                 <NotificationPanel onClose={() => setNotifOpen(false)} />
               </div>
             )}
@@ -127,7 +126,7 @@ export default function Layout({ children }) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto px-6 py-10 lg:px-10 lg:py-16">{children}</main>
       </div>
 
       <InactivityModal

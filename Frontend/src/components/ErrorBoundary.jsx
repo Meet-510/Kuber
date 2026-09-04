@@ -10,7 +10,6 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    // In a real app this would report to Sentry/Datadog; console for the demo.
     console.error('Uncaught render error:', error, info);
   }
 
@@ -18,15 +17,18 @@ export default class ErrorBoundary extends Component {
     if (!this.state.hasError) return this.props.children;
 
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-950 px-4 text-center">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-paper px-6 text-center">
         <div className="max-w-md">
-          <h1 className="text-2xl font-bold text-gray-100">Something went wrong</h1>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="eyebrow mb-6">Error</p>
+          <h1 className="serif text-5xl leading-[0.98] tracking-tight text-ink">
+            Something went <span className="serif-italic text-ink-3">wrong.</span>
+          </h1>
+          <p className="mt-4 text-base text-ink-3">
             An unexpected error occurred. Try reloading the page.
           </p>
           <button
             onClick={() => window.location.reload()}
-            className="btn-primary mt-6 px-6 py-2.5"
+            className="btn-primary mt-8"
           >
             Reload
           </button>

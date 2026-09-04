@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
-import { CheckCircle, Eye, EyeOff, Landmark } from 'lucide-react';
+import { CheckCircle, Eye, EyeOff, ArrowUpRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { RESET_PASSWORD } from '../graphql/mutations.js';
 
@@ -16,7 +16,6 @@ export default function ResetPassword() {
   const [resetPassword, { loading }] = useMutation(RESET_PASSWORD, {
     onCompleted: () => {
       setDone(true);
-      // Small delay so the user sees the success state before we route them.
       setTimeout(() => navigate('/login', { replace: true }), 1800);
     },
     onError: (e) => toast.error(e.message),
@@ -25,43 +24,49 @@ export default function ResetPassword() {
   const submit = (e) => {
     e.preventDefault();
     if (pw.length < 6) return toast.error('Password must be at least 6 characters');
-    if (pw !== confirm) return toast.error('Passwords don\'t match');
+    if (pw !== confirm) return toast.error("Passwords don't match");
     resetPassword({ variables: { id, token, password: pw } });
   };
 
   const linkLooksBad = !id || !token;
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-950 px-4">
-      <div className="relative w-full max-w-md">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-[#1f5c3d]">
-            <Landmark className="h-7 w-7 text-[#f2f0e9]" />
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-100">
-            {done ? 'Password updated' : 'Choose a new password'}
-          </h1>
-          <p className="mt-1 text-sm text-gray-500">
-            {done
-              ? 'Redirecting you to sign in…'
-              : linkLooksBad
-                ? 'This link looks incomplete.'
-                : 'Enter and confirm your new password below.'}
-          </p>
-        </div>
+    <div className="min-h-screen bg-paper">
+      <div className="mx-auto max-w-6xl px-6 py-8 md:px-10">
+        <Link to="/login" className="serif text-2xl text-ink">
+          Kuber<span className="serif-italic text-ink-3">.</span>
+        </Link>
+      </div>
 
-        <div className="card">
+      <div className="mx-auto flex max-w-md flex-col px-6 pt-16 md:pt-24 pb-24 animate-fade-in">
+        <p className="eyebrow mb-6">New password</p>
+        <h1 className="serif text-5xl md:text-6xl leading-[0.98] tracking-tight text-ink">
           {done ? (
-            <div className="text-center animate-fade-in space-y-4">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#1f5c3d]/15">
-                <CheckCircle className="h-7 w-7 text-[#1f5c3d]" />
+            <>Password <span className="serif-italic text-ink-3">updated.</span></>
+          ) : (
+            <>Choose a new <span className="serif-italic text-ink-3">password.</span></>
+          )}
+        </h1>
+        <p className="mt-4 text-base text-ink-3">
+          {done
+            ? 'Redirecting you to sign in…'
+            : linkLooksBad
+              ? 'This link looks incomplete.'
+              : 'Enter and confirm your new password below.'}
+        </p>
+
+        <div className="mt-12">
+          {done ? (
+            <div className="flex items-center gap-4 border-t border-line pt-8 animate-fade-in">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full border border-line text-ink">
+                <CheckCircle className="h-5 w-5" strokeWidth={1.5} />
               </div>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-ink-3">
                 You can now sign in with your new password.
               </p>
             </div>
           ) : (
-            <form onSubmit={submit} className="space-y-5 animate-fade-in">
+            <form onSubmit={submit} className="space-y-6 animate-fade-in">
               <div>
                 <label className="label">New password</label>
                 <div className="relative">
@@ -69,7 +74,7 @@ export default function ResetPassword() {
                     type={showPw ? 'text' : 'password'}
                     value={pw}
                     onChange={(e) => setPw(e.target.value)}
-                    className="input-field pr-11"
+                    className="input-field pr-12"
                     placeholder="Min. 6 characters"
                     autoComplete="new-password"
                     minLength={6}
@@ -79,10 +84,10 @@ export default function ResetPassword() {
                   <button
                     type="button"
                     onClick={() => setShowPw(!showPw)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink transition-colors"
                     aria-label={showPw ? 'Hide password' : 'Show password'}
                   >
-                    {showPw ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    {showPw ? <EyeOff className="h-4 w-4" strokeWidth={1.5} /> : <Eye className="h-4 w-4" strokeWidth={1.5} />}
                   </button>
                 </div>
               </div>
@@ -101,24 +106,23 @@ export default function ResetPassword() {
                 />
               </div>
 
-              <button
-                type="submit"
-                disabled={loading || linkLooksBad}
-                className="btn-primary w-full py-3 text-base"
-              >
+              <button type="submit" disabled={loading || linkLooksBad} className="btn-primary group w-full">
                 {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-transparent" />
+                  <span className="flex items-center gap-2">
+                    <span className="h-3.5 w-3.5 animate-spin rounded-full border border-paper/60 border-t-transparent" />
                     Updating password…
                   </span>
                 ) : (
-                  'Update password'
+                  <>
+                    Update password
+                    <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={1.5} />
+                  </>
                 )}
               </button>
 
               <Link
                 to="/login"
-                className="block text-center text-sm text-gray-500 hover:text-gray-300 transition-colors"
+                className="block text-center text-sm text-ink-4 hover:text-ink transition-colors"
               >
                 Back to sign in
               </Link>

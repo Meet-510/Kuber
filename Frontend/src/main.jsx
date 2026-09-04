@@ -16,14 +16,15 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           position="top-right"
           toastOptions={{
             style: {
-              background: '#fbfaf6',
-              color: '#1a1915',
-              border: '1px solid #e7e3d9',
-              borderRadius: '10px',
+              background: '#faf9f6',
+              color: '#0d0d0d',
+              border: '1px solid #e4e2dc',
+              borderRadius: '999px',
               fontSize: '14px',
+              padding: '10px 18px',
             },
-            success: { iconTheme: { primary: '#1f5c3d', secondary: '#fbfaf6' } },
-            error: { iconTheme: { primary: '#a23b34', secondary: '#fbfaf6' } },
+            success: { iconTheme: { primary: '#4f46e5', secondary: '#faf9f6' } },
+            error: { iconTheme: { primary: '#a23b34', secondary: '#faf9f6' } },
           }}
         />
       </ApolloProvider>

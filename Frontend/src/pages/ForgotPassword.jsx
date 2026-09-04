@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
-import { ArrowLeft, Landmark, Mail, MailCheck } from 'lucide-react';
+import { ArrowLeft, Mail, MailCheck, ArrowUpRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { REQUEST_PASSWORD_RESET } from '../graphql/mutations.js';
 
@@ -10,8 +10,7 @@ export default function ForgotPassword() {
   const [sent, setSent] = useState(false);
 
   const [requestReset, { loading }] = useMutation(REQUEST_PASSWORD_RESET, {
-    // Server always returns true (enumeration defense) — we show the same
-    // confirmation regardless of whether the email exists in the DB.
+    // Server always returns true (enumeration defense).
     onCompleted: () => setSent(true),
     onError: (e) => toast.error(e.message),
   });
@@ -23,51 +22,55 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-950 px-4">
-      <div className="relative w-full max-w-md">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-[#1f5c3d]">
-            <Landmark className="h-7 w-7 text-[#f2f0e9]" />
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-100">
-            {sent ? 'Check your email' : 'Reset your password'}
-          </h1>
-          <p className="mt-1 text-sm text-gray-500">
-            {sent
-              ? 'If an account with that email exists, we\'ve sent a reset link.'
-              : 'Enter your email and we\'ll send you a link to set a new password.'}
-          </p>
-        </div>
+    <div className="min-h-screen bg-paper">
+      <div className="mx-auto max-w-6xl px-6 py-8 md:px-10">
+        <Link to="/login" className="serif text-2xl text-ink">
+          Kuber<span className="serif-italic text-ink-3">.</span>
+        </Link>
+      </div>
 
-        <div className="card">
+      <div className="mx-auto flex max-w-md flex-col px-6 pt-16 md:pt-24 pb-24 animate-fade-in">
+        <p className="eyebrow mb-6">Password reset</p>
+        <h1 className="serif text-5xl md:text-6xl leading-[0.98] tracking-tight text-ink">
           {sent ? (
-            <div className="text-center animate-fade-in space-y-4">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#1f5c3d]/15">
-                <MailCheck className="h-7 w-7 text-[#1f5c3d]" />
+            <>Check your <span className="serif-italic text-ink-3">email.</span></>
+          ) : (
+            <>Reset your <span className="serif-italic text-ink-3">password.</span></>
+          )}
+        </h1>
+        <p className="mt-4 text-base text-ink-3">
+          {sent
+            ? "If an account with that email exists, we've sent a reset link."
+            : "Enter your email and we'll send you a link to set a new password."}
+        </p>
+
+        <div className="mt-12">
+          {sent ? (
+            <div className="space-y-8 animate-fade-in">
+              <div className="flex items-center gap-4 border-t border-line pt-8">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-line text-ink">
+                  <MailCheck className="h-5 w-5" strokeWidth={1.5} />
+                </div>
+                <p className="text-sm text-ink-3">
+                  The link expires in 15 minutes and can only be used once.
+                </p>
               </div>
-              <p className="text-sm text-gray-400">
-                The link expires in 15 minutes and can only be used once. Check your spam folder if
-                you don't see it soon.
-              </p>
-              <Link
-                to="/login"
-                className="btn-primary w-full py-2.5 inline-flex items-center justify-center gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
+              <Link to="/login" className="btn-primary group w-full">
+                <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
                 Back to sign in
               </Link>
             </div>
           ) : (
-            <form onSubmit={submit} className="space-y-5 animate-fade-in">
+            <form onSubmit={submit} className="space-y-6 animate-fade-in">
               <div>
                 <label className="label">Email address</label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-600" />
+                  <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-5" strokeWidth={1.5} />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="input-field pl-10"
+                    className="input-field pl-12"
                     placeholder="you@example.com"
                     autoComplete="email"
                     autoFocus
@@ -76,20 +79,23 @@ export default function ForgotPassword() {
                 </div>
               </div>
 
-              <button type="submit" disabled={loading} className="btn-primary w-full py-3 text-base">
+              <button type="submit" disabled={loading} className="btn-primary group w-full">
                 {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-transparent" />
+                  <span className="flex items-center gap-2">
+                    <span className="h-3.5 w-3.5 animate-spin rounded-full border border-paper/60 border-t-transparent" />
                     Sending link…
                   </span>
                 ) : (
-                  'Send reset link'
+                  <>
+                    Send reset link
+                    <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={1.5} />
+                  </>
                 )}
               </button>
 
               <Link
                 to="/login"
-                className="flex items-center justify-center gap-1 text-sm text-gray-500 hover:text-gray-300 transition-colors"
+                className="flex items-center justify-center gap-1 text-sm text-ink-4 hover:text-ink transition-colors"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
                 Back to sign in

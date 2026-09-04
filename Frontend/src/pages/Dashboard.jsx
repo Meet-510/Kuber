@@ -1,6 +1,6 @@
 import { useQuery } from '@apollo/client';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, ClipboardList, RefreshCw, CreditCard } from 'lucide-react';
+import { ArrowUpRight, ClipboardList, RefreshCw } from 'lucide-react';
 import { GET_ME, GET_TRANSACTIONS } from '../graphql/queries.js';
 import { useAuthStore } from '../store/authStore.js';
 import { formatCurrency } from '../lib/utils.js';
@@ -26,117 +26,152 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
-        {/* Greeting */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-100">
-              {getGreeting()}, {user?.name?.split(' ')[0]} 👋
-            </h1>
-            <p className="mt-0.5 text-sm text-gray-500">
+      <div className="mx-auto max-w-5xl animate-fade-in">
+        {/* Editorial header */}
+        <header className="grid gap-8 md:grid-cols-12">
+          <div className="md:col-span-3">
+            <p className="eyebrow">
               {new Date().toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric' })}
             </p>
           </div>
-          <button
-            onClick={() => refetch()}
-            className="rounded-lg p-2 text-gray-500 hover:bg-gray-800 hover:text-gray-300 transition-colors"
-            title="Refresh"
-          >
-            <RefreshCw className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Balance hero + quick actions */}
-        <div className="grid gap-4 lg:grid-cols-3">
-          {/* Balance card */}
-          <div className="lg:col-span-2 rounded-xl balance-gradient p-6 text-[#f2f0e9]">
-            <div className="flex items-center gap-2 mb-4">
-              <CreditCard className="h-4 w-4 text-[#9a968c]" />
-              <p className="text-xs font-medium uppercase tracking-wider text-[#9a968c]">
-                Total balance
-              </p>
-            </div>
-
-            {meLoading ? (
-              <div className="h-10 w-40 animate-pulse rounded-lg bg-white/10" />
-            ) : (
-              <p className="text-4xl font-semibold tracking-tight">
-                {formatCurrency(account?.balance ?? 0)}
-              </p>
-            )}
-
-            <p className="mt-1 text-sm text-[#79756b]">{account?.currency ?? 'CAD'}</p>
-
-            <div className="mt-6 border-t border-white/10 pt-4">
-              <p className="text-[11px] uppercase tracking-wider text-[#79756b]">Account number</p>
-              <p className="font-mono text-sm tracking-widest mt-1 text-[#d8d4ca]">
-                {account?.accountNumber
-                  ? account.accountNumber.replace(/(.{4})/g, '$1 ').trim()
-                  : '—'}
-              </p>
-            </div>
+          <div className="md:col-span-9 flex items-start justify-between gap-4">
+            <h1 className="serif text-5xl md:text-7xl leading-[0.98] tracking-tight text-ink">
+              {getGreeting()},<br />
+              <span className="serif-italic text-ink-3">
+                {user?.name?.split(' ')[0] || 'friend'}.
+              </span>
+            </h1>
+            <button
+              onClick={() => refetch()}
+              className="mt-2 rounded-full p-2 text-ink-4 hover:text-ink transition-colors"
+              title="Refresh"
+              aria-label="Refresh"
+            >
+              <RefreshCw className="h-4 w-4" strokeWidth={1.5} />
+            </button>
           </div>
+        </header>
 
-          {/* Quick actions */}
-          <div className="flex flex-col gap-4">
-            <Link to="/send" className="card flex flex-1 items-center gap-4 hover:border-purple-500/40 hover:bg-gray-800 transition-all duration-200 group">
-              <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-purple-500/15 text-purple-400 group-hover:bg-purple-500/25 transition-colors">
-                <ArrowUpRight className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="font-semibold text-gray-200">Send money</p>
-                <p className="text-xs text-gray-500">Instant e-transfer</p>
-              </div>
-            </Link>
-
-            <Link to="/transactions" className="card flex flex-1 items-center gap-4 hover:border-purple-500/40 hover:bg-gray-800 transition-all duration-200 group">
-              <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-purple-500/15 text-purple-400 group-hover:bg-purple-500/25 transition-colors">
-                <ClipboardList className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="font-semibold text-gray-200">Transactions</p>
-                <p className="text-xs text-gray-500">View history</p>
-              </div>
-            </Link>
+        {/* Balance — inverted ink block */}
+        <section className="mt-16 grid gap-6 md:grid-cols-12">
+          <div className="md:col-span-3">
+            <p className="eyebrow">Total balance</p>
           </div>
-        </div>
-
-        {/* Recent transactions */}
-        <div className="card">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-gray-100">Recent transactions</h2>
-            <Link to="/transactions" className="text-sm text-purple-400 hover:text-purple-300 transition-colors">
-              View all →
-            </Link>
-          </div>
-          {txLoading ? (
-            <div className="space-y-3">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="flex gap-3">
-                  <div className="h-10 w-10 animate-pulse rounded-full bg-gray-800" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-3.5 w-3/4 animate-pulse rounded bg-gray-800" />
-                    <div className="h-3 w-1/2 animate-pulse rounded bg-gray-800" />
-                  </div>
+          <div className="md:col-span-9">
+            <div className="balance-gradient rounded-[28px] px-10 py-12 text-paper">
+              <p className="text-xs uppercase tracking-eyebrow text-ink-5">
+                {account?.currency ?? 'CAD'}
+              </p>
+              {meLoading ? (
+                <div className="mt-4 h-14 w-56 animate-pulse rounded bg-paper/10" />
+              ) : (
+                <p className="mt-4 serif text-6xl md:text-8xl leading-none tracking-tight">
+                  {formatCurrency(account?.balance ?? 0)}
+                </p>
+              )}
+              <div className="mt-10 flex items-end justify-between border-t border-paper/10 pt-6">
+                <div>
+                  <p className="text-[11px] uppercase tracking-eyebrow text-ink-5">Account</p>
+                  <p className="mt-1 font-mono text-sm tracking-widest text-paper/80">
+                    {account?.accountNumber
+                      ? account.accountNumber.replace(/(.{4})/g, '$1 ').trim()
+                      : '—'}
+                  </p>
                 </div>
-              ))}
+                <Link
+                  to="/send"
+                  className="group inline-flex items-center gap-2 rounded-full border border-paper/20 px-5 py-2.5 text-xs font-medium text-paper hover:border-paper transition-colors"
+                >
+                  Send money
+                  <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={1.5} />
+                </Link>
+              </div>
             </div>
-          ) : recentTxs.length === 0 ? (
-            <div className="py-10 text-center text-gray-500 text-sm">
-              No transactions yet.<br />
-              <Link to="/send" className="text-purple-400 hover:underline mt-1 inline-block">
-                Send your first transfer →
-              </Link>
+          </div>
+        </section>
+
+        {/* Quick actions — editorial list, no cards */}
+        <section className="mt-24">
+          <div className="grid gap-8 md:grid-cols-12">
+            <div className="md:col-span-3">
+              <p className="eyebrow">Actions</p>
             </div>
-          ) : (
-            <div className="space-y-1 -mx-3">
-              {recentTxs.map((tx) => (
-                <TransactionItem key={tx.id} tx={tx} />
-              ))}
+            <div className="md:col-span-9">
+              <QuickLink to="/send" icon={ArrowUpRight} title="Send money" meta="Instant e-transfer" />
+              <QuickLink to="/transactions" icon={ClipboardList} title="Transactions" meta="Full history" />
             </div>
-          )}
-        </div>
+          </div>
+        </section>
+
+        {/* Recent transactions — editorial spread */}
+        <section className="mt-24">
+          <div className="grid gap-8 md:grid-cols-12">
+            <div className="md:col-span-3">
+              <p className="eyebrow">Recent</p>
+              <h2 className="mt-2 serif text-3xl leading-none tracking-tight text-ink">
+                Activity
+              </h2>
+            </div>
+            <div className="md:col-span-9">
+              {txLoading ? (
+                <div className="space-y-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="flex gap-4 border-t border-line py-5">
+                      <div className="h-10 w-10 animate-pulse rounded-full bg-line" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-3.5 w-3/4 animate-pulse rounded bg-line" />
+                        <div className="h-3 w-1/2 animate-pulse rounded bg-line" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : recentTxs.length === 0 ? (
+                <div className="border-t border-line py-16 text-center text-sm text-ink-4">
+                  No transactions yet.<br />
+                  <Link to="/send" className="mt-2 inline-block text-ink hover:text-accent transition-colors underline underline-offset-4 decoration-line-2">
+                    Send your first transfer →
+                  </Link>
+                </div>
+              ) : (
+                <div>
+                  {recentTxs.map((tx) => (
+                    <TransactionItem key={tx.id} tx={tx} />
+                  ))}
+                </div>
+              )}
+              <div className="mt-6 border-t border-line pt-6 text-right">
+                <Link
+                  to="/transactions"
+                  className="text-sm text-ink hover:text-accent transition-colors underline underline-offset-4 decoration-line-2"
+                >
+                  View all →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </Layout>
+  );
+}
+
+function QuickLink({ to, icon: Icon, title, meta }) {
+  return (
+    <Link
+      to={to}
+      className="group flex items-baseline justify-between gap-6 border-t border-line py-6 transition-colors hover:text-ink"
+    >
+      <div className="flex items-baseline gap-6">
+        <Icon className="h-4 w-4 flex-shrink-0 text-ink-4 group-hover:text-ink transition-colors" strokeWidth={1.5} />
+        <div>
+          <p className="serif text-2xl leading-none tracking-tight text-ink">{title}</p>
+          <p className="mt-2 text-sm text-ink-4">{meta}</p>
+        </div>
+      </div>
+      <ArrowUpRight
+        className="h-5 w-5 text-ink-4 transition-all duration-200 group-hover:text-accent group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+        strokeWidth={1.5}
+      />
+    </Link>
   );
 }

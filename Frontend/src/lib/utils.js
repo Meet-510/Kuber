@@ -29,10 +29,10 @@ export const getInitials = (name = '') =>
 
 export const getStatusColor = (status) => {
   switch (status) {
-    case 'COMPLETED': return 'text-emerald-400 bg-emerald-400/10';
-    case 'PENDING':   return 'text-amber-400 bg-amber-400/10';
-    case 'FAILED':    return 'text-red-400 bg-red-400/10';
-    default:          return 'text-gray-400 bg-gray-400/10';
+    case 'COMPLETED': return 'border-line text-emerald-400';
+    case 'PENDING':   return 'border-line text-amber-400';
+    case 'FAILED':    return 'border-line text-red-400';
+    default:          return 'border-line text-ink-4';
   }
 };
 

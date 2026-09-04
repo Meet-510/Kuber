@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
-import { Eye, EyeOff, Landmark, Mail } from 'lucide-react';
+import { Eye, EyeOff, Mail, ArrowUpRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { LOGIN_USER } from '../graphql/mutations.js';
 import { useAuthStore } from '../store/authStore.js';
@@ -28,88 +28,103 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-950 px-4">
-      <div className="relative w-full max-w-md">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-[#1f5c3d]">
-            <Landmark className="h-7 w-7 text-[#f2f0e9]" />
+    <div className="min-h-screen bg-paper">
+      {/* Header wordmark */}
+      <div className="mx-auto max-w-6xl px-6 py-8 md:px-10">
+        <Link to="/login" className="serif text-2xl text-ink">
+          Kuber<span className="serif-italic text-ink-3">.</span>
+        </Link>
+      </div>
+
+      <div className="mx-auto flex max-w-md flex-col px-6 pt-16 md:pt-24 pb-24 animate-fade-in">
+        <p className="eyebrow mb-6">Sign in</p>
+        <h1 className="serif text-5xl md:text-6xl leading-[0.98] tracking-tight text-ink">
+          Welcome <span className="serif-italic text-ink-3">back.</span>
+        </h1>
+        <p className="mt-4 text-base text-ink-3">
+          Sign in to your Kuber account to continue.
+        </p>
+
+        <form onSubmit={handleSubmit} className="mt-12 space-y-6">
+          <div>
+            <label className="label">Email address</label>
+            <div className="relative">
+              <Mail
+                className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-5"
+                strokeWidth={1.5}
+              />
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="input-field pl-12"
+                placeholder="you@example.com"
+                autoComplete="email"
+                autoFocus
+                required
+              />
+            </div>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-100">Welcome back</h1>
-          <p className="mt-1 text-sm text-gray-500">Sign in to your Kuber account</p>
-        </div>
 
-        <div className="card">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="label">Email address</label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-600" />
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="input-field pl-10"
-                  placeholder="you@example.com"
-                  autoComplete="email"
-                  autoFocus
-                  required
-                />
-              </div>
+          <div>
+            <div className="mb-2 flex items-baseline justify-between">
+              <label className="label mb-0">Password</label>
+              <Link
+                to="/forgot-password"
+                className="text-xs text-ink-4 hover:text-accent transition-colors"
+              >
+                Forgot?
+              </Link>
             </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="label mb-0">Password</label>
-                <Link
-                  to="/forgot-password"
-                  className="text-xs text-[#2c7a52] hover:text-[#1f5c3d] transition-colors"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <div className="relative">
-                <input
-                  type={showPw ? 'text' : 'password'}
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="input-field pr-11"
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
-                  aria-label={showPw ? 'Hide password' : 'Show password'}
-                >
-                  {showPw ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
+            <div className="relative">
+              <input
+                type={showPw ? 'text' : 'password'}
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                className="input-field pr-12"
+                placeholder="••••••••"
+                autoComplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw(!showPw)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink transition-colors"
+                aria-label={showPw ? 'Hide password' : 'Show password'}
+              >
+                {showPw ? <EyeOff className="h-4 w-4" strokeWidth={1.5} /> : <Eye className="h-4 w-4" strokeWidth={1.5} />}
+              </button>
             </div>
+          </div>
 
-            <button type="submit" disabled={loading} className="btn-primary w-full py-3 text-base">
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-transparent" />
-                  Signing in…
-                </span>
-              ) : (
-                'Sign in'
-              )}
-            </button>
-          </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-primary group w-full"
+          >
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <span className="h-3.5 w-3.5 animate-spin rounded-full border border-paper/60 border-t-transparent" />
+                Signing in…
+              </span>
+            ) : (
+              <>
+                Sign in
+                <ArrowUpRight
+                  className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  strokeWidth={1.5}
+                />
+              </>
+            )}
+          </button>
+        </form>
 
-          <p className="mt-5 text-center text-sm text-gray-500">
-            New to Kuber?{' '}
-            <Link
-              to="/register"
-              className="font-medium text-[#2c7a52] hover:text-[#1f5c3d] transition-colors"
-            >
-              Create an account
-            </Link>
-          </p>
-        </div>
+        <p className="mt-10 text-sm text-ink-4">
+          New to Kuber?{' '}
+          <Link to="/register" className="text-ink hover:text-accent transition-colors underline underline-offset-4 decoration-line-2">
+            Create an account
+          </Link>
+        </p>
       </div>
     </div>
   );

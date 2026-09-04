@@ -3,60 +3,119 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    @apply border-gray-800;
+  html {
+    color-scheme: light;
   }
   body {
-    @apply bg-gray-950 text-gray-100 antialiased;
-    font-feature-settings: 'cv11', 'ss01';
+    @apply bg-paper text-ink-3 antialiased;
+    font-feature-settings: 'ss01', 'cv11', 'liga', 'kern';
     font-variant-numeric: tabular-nums;
   }
+  h1, h2, h3, h4 {
+    @apply text-ink;
+  }
   ::selection {
-    background: rgba(31, 92, 61, 0.16);
+    background: #0d0d0d;
+    color: #faf9f6;
+  }
+  :focus-visible {
+    outline: 2px solid #4f46e5;
+    outline-offset: 3px;
+    border-radius: 4px;
   }
   ::-webkit-scrollbar {
-    @apply w-1.5;
+    @apply w-2.5;
   }
   ::-webkit-scrollbar-track {
     @apply bg-transparent;
   }
   ::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-gray-700;
+    background: #d4d2ca;
+    border: 2px solid #faf9f6;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #9a9a94;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
 @layer components {
+  /* Editorial "card" — content sits directly on paper, separated by a
+     hairline. No shadow, no fill on the main canvas. */
   .card {
-    @apply rounded-xl bg-gray-900 border border-gray-800 p-6 shadow-card;
+    @apply rounded-none border-t border-line bg-transparent py-8;
   }
+
+  /* When a real surface IS needed (modals, dropdowns), use .surface */
+  .surface {
+    @apply rounded-2xl border border-line bg-paper;
+  }
+
+  /* Primary CTA — ink pill on paper. Accent appears on hover only. */
   .btn-primary {
-    @apply rounded-[10px] bg-[#1f5c3d] px-5 py-2.5 font-medium text-[#f2f0e9]
-           hover:bg-[#184a31] transition-colors duration-150
+    @apply inline-flex items-center justify-center gap-2 rounded-full
+           bg-ink px-6 py-3 text-sm font-medium text-paper
+           hover:bg-accent transition-colors duration-200 ease-out-expo
            active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
   }
+
+  /* Secondary — hairline outline pill */
   .btn-secondary {
-    @apply rounded-[10px] border border-gray-700 bg-transparent px-5 py-2.5 font-medium text-gray-300
-           hover:bg-gray-800 transition-colors duration-150 active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 rounded-full
+           border border-line-2 bg-transparent px-6 py-3 text-sm font-medium text-ink
+           hover:border-ink transition-colors duration-200 ease-out-expo
+           active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
   }
+
+  /* Input — pill on paper with hairline border, accent focus ring */
   .input-field {
-    @apply w-full rounded-[10px] bg-white border border-gray-700 px-4 py-3 text-gray-100
-           placeholder-gray-600 focus:border-[#1f5c3d] focus:outline-none focus:ring-1
-           focus:ring-[#1f5c3d]/40 transition-colors duration-150;
+    @apply w-full rounded-full bg-paper border border-line-2 px-5 py-3 text-ink
+           placeholder:text-ink-5 focus:border-accent focus:outline-none
+           focus:ring-2 focus:ring-accent/20 transition-colors duration-200;
   }
+
   .label {
-    @apply block text-sm font-medium text-gray-400 mb-1.5;
+    @apply block text-xs font-medium uppercase tracking-eyebrow text-ink-4 mb-2;
   }
+
   .badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+    @apply inline-flex items-center rounded-full border border-line px-2.5 py-0.5
+           text-[11px] font-medium text-ink-3;
+  }
+
+  /* Editorial utilities */
+  .serif {
+    font-family: 'Instrument Serif', 'Iowan Old Style', Georgia, ui-serif, serif;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+  .serif-italic {
+    font-family: 'Instrument Serif', 'Iowan Old Style', Georgia, ui-serif, serif;
+    font-style: italic;
+    font-weight: 400;
+  }
+  .eyebrow {
+    @apply text-xs font-medium uppercase tracking-eyebrow text-ink-4;
+  }
+  .rule {
+    @apply border-t border-line;
   }
 }
 
-/* Brand wordmark — solid ink-green, no gradient */
+/* Brand wordmark — serif ink display */
 .gradient-text {
-  color: #1f5c3d;
+  font-family: 'Instrument Serif', 'Iowan Old Style', Georgia, ui-serif, serif;
+  font-style: italic;
+  color: #0d0d0d;
 }
 
-/* Balance hero — solid ink block instead of a gradient */
+/* Balance hero — inverted ink block */
 .balance-gradient {
-  background: #1a1915;
+  background: #0d0d0d;
 }

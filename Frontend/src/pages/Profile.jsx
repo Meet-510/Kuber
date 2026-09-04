@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
-import { User, Mail, CreditCard, Shield, LogOut, Edit3, Check } from 'lucide-react';
+import { LogOut, Edit3, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { UPDATE_PROFILE } from '../graphql/mutations.js';
@@ -23,7 +23,7 @@ export default function Profile() {
     refetchQueries: [GET_ME],
     onCompleted: ({ updateProfile }) => {
       updateUser(updateProfile);
-      toast.success('Profile updated!');
+      toast.success('Profile updated');
       setEditingName(false);
     },
     onError: (e) => toast.error(e.message),
@@ -44,130 +44,133 @@ export default function Profile() {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto animate-fade-in space-y-6">
-        <h1 className="text-2xl font-bold text-gray-100">Profile</h1>
-
-        {/* Avatar + name */}
-        <div className="card flex items-center gap-5">
-          <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full bg-[#1f5c3d] text-2xl font-medium text-[#f2f0e9]">
-            {me?.avatar ? (
-              <img src={me.avatar} alt={me.name} className="h-20 w-20 rounded-full object-cover" />
-            ) : (
-              getInitials(me?.name || user?.name)
-            )}
+      <div className="mx-auto max-w-5xl animate-fade-in">
+        <header className="grid gap-8 md:grid-cols-12">
+          <div className="md:col-span-3">
+            <p className="eyebrow">Account</p>
           </div>
+          <div className="md:col-span-9">
+            <h1 className="serif text-5xl md:text-7xl leading-[0.98] tracking-tight text-ink">
+              Your <span className="serif-italic text-ink-3">profile.</span>
+            </h1>
+          </div>
+        </header>
 
-          <div className="flex-1 min-w-0">
-            {editingName ? (
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  className="input-field py-1.5 text-sm"
-                  autoFocus
-                  onKeyDown={(e) => e.key === 'Enter' && handleNameSave()}
-                />
-                <button
-                  onClick={handleNameSave}
-                  disabled={loading}
-                  className="flex-shrink-0 rounded-lg bg-purple-600 p-2 text-white hover:bg-purple-500 transition-colors"
-                >
-                  <Check className="h-4 w-4" />
-                </button>
+        {/* Identity */}
+        <section className="mt-16 grid gap-8 md:grid-cols-12">
+          <div className="md:col-span-3">
+            <p className="eyebrow">Identity</p>
+          </div>
+          <div className="md:col-span-9 border-t border-line pt-8">
+            <div className="flex items-center gap-6">
+              <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full border border-line text-lg font-medium text-ink overflow-hidden">
+                {me?.avatar ? (
+                  <img src={me.avatar} alt={me.name} className="h-full w-full object-cover" />
+                ) : (
+                  getInitials(me?.name || user?.name)
+                )}
               </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-semibold text-gray-100">{me?.name || user?.name}</h2>
-                <button
-                  onClick={() => { setNewName(me?.name || user?.name || ''); setEditingName(true); }}
-                  className="rounded-lg p-1 text-gray-600 hover:text-gray-400 transition-colors"
-                >
-                  <Edit3 className="h-4 w-4" />
-                </button>
+
+              <div className="flex-1 min-w-0">
+                {editingName ? (
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="text"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      className="input-field py-2 text-base"
+                      autoFocus
+                      onKeyDown={(e) => e.key === 'Enter' && handleNameSave()}
+                    />
+                    <button
+                      onClick={handleNameSave}
+                      disabled={loading}
+                      className="flex-shrink-0 rounded-full bg-ink p-2.5 text-paper hover:bg-accent transition-colors"
+                      aria-label="Save"
+                    >
+                      <Check className="h-4 w-4" strokeWidth={1.5} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <h2 className="serif text-3xl leading-none tracking-tight text-ink">
+                      {me?.name || user?.name}
+                    </h2>
+                    <button
+                      onClick={() => { setNewName(me?.name || user?.name || ''); setEditingName(true); }}
+                      className="rounded-full p-1.5 text-ink-4 hover:text-ink transition-colors"
+                      aria-label="Edit name"
+                    >
+                      <Edit3 className="h-3.5 w-3.5" strokeWidth={1.5} />
+                    </button>
+                  </div>
+                )}
+                <p className="mt-2 text-sm text-ink-3">{me?.email || user?.email}</p>
+                <p className="mt-1 text-xs text-ink-4">
+                  Member since {me?.createdAt ? formatDate(me.createdAt) : '—'}
+                </p>
               </div>
-            )}
-            <p className="text-sm text-gray-500 mt-0.5">{me?.email || user?.email}</p>
-            <p className="text-xs text-gray-600 mt-1">
-              Member since {me?.createdAt ? formatDate(me.createdAt) : '—'}
-            </p>
+            </div>
           </div>
-        </div>
+        </section>
 
-        {/* Account info */}
-        <div className="card space-y-4">
-          <h3 className="font-semibold text-gray-200 flex items-center gap-2">
-            <CreditCard className="h-5 w-5 text-purple-400" />
-            Account Details
-          </h3>
-
-          <div className="space-y-3">
-            <InfoRow label="Account Number" value={account?.accountNumber ?? '—'} mono />
-            <InfoRow label="Balance" value={formatCurrency(account?.balance ?? 0)} highlight />
-            <InfoRow label="Currency" value={account?.currency ?? 'CAD'} />
+        {/* Account details */}
+        <section className="mt-16 grid gap-8 md:grid-cols-12">
+          <div className="md:col-span-3">
+            <p className="eyebrow">Account</p>
           </div>
-        </div>
-
-        {/* Personal info */}
-        <div className="card space-y-4">
-          <h3 className="font-semibold text-gray-200 flex items-center gap-2">
-            <User className="h-5 w-5 text-blue-400" />
-            Personal Information
-          </h3>
-          <div className="space-y-3">
-            <InfoRow label="Full Name" value={me?.name || user?.name || '—'} />
-            <InfoRow label="Email" value={me?.email || user?.email || '—'} />
+          <div className="md:col-span-9">
+            <dl className="border-t border-line divide-y divide-line">
+              <Row label="Account number" value={account?.accountNumber ?? '—'} mono />
+              <Row label="Balance" value={formatCurrency(account?.balance ?? 0)} />
+              <Row label="Currency" value={account?.currency ?? 'CAD'} />
+            </dl>
           </div>
-        </div>
+        </section>
 
         {/* Security */}
-        <div className="card space-y-4">
-          <h3 className="font-semibold text-gray-200 flex items-center gap-2">
-            <Shield className="h-5 w-5 text-emerald-400" />
-            Security
-          </h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between py-2 border-b border-gray-800">
-              <div>
-                <p className="text-sm font-medium text-gray-300">Password</p>
-                <p className="text-xs text-gray-600">Last updated: never (simulated)</p>
-              </div>
-              <span className="badge bg-emerald-400/10 text-emerald-400">Protected</span>
-            </div>
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <p className="text-sm font-medium text-gray-300">JWT Session</p>
-                <p className="text-xs text-gray-600">Expires in 7 days</p>
-              </div>
-              <span className="badge bg-blue-400/10 text-blue-400">Active</span>
-            </div>
+        <section className="mt-16 grid gap-8 md:grid-cols-12">
+          <div className="md:col-span-3">
+            <p className="eyebrow">Security</p>
           </div>
-        </div>
+          <div className="md:col-span-9">
+            <dl className="border-t border-line divide-y divide-line">
+              <Row label="Password" value="Protected" meta="Last updated: never (simulated)" />
+              <Row label="Session" value="Active" meta="Expires in 7 days" />
+            </dl>
+          </div>
+        </section>
 
         {/* Sign out */}
-        <button
-          onClick={handleLogout}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 py-3 text-sm font-medium text-red-400 hover:bg-red-500/20 transition-colors duration-200"
-        >
-          <LogOut className="h-4 w-4" />
-          Sign out
-        </button>
+        <section className="mt-16 grid gap-8 md:grid-cols-12">
+          <div className="md:col-span-3">
+            <p className="eyebrow">Sign out</p>
+          </div>
+          <div className="md:col-span-9 border-t border-line pt-8">
+            <button
+              onClick={handleLogout}
+              className="btn-secondary group"
+            >
+              <LogOut className="h-4 w-4" strokeWidth={1.5} />
+              Sign out of Kuber
+            </button>
+          </div>
+        </section>
       </div>
     </Layout>
   );
 }
 
-function InfoRow({ label, value, mono, highlight }) {
+function Row({ label, value, meta, mono }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-gray-800 last:border-0">
-      <p className="text-sm text-gray-500">{label}</p>
-      <p
-        className={`text-sm font-medium ${
-          highlight ? 'text-purple-300' : mono ? 'font-mono text-gray-300' : 'text-gray-300'
-        }`}
-      >
+    <div className="flex items-baseline justify-between gap-6 py-5">
+      <div>
+        <dt className="eyebrow">{label}</dt>
+        {meta && <p className="mt-1 text-xs text-ink-4">{meta}</p>}
+      </div>
+      <dd className={`text-sm font-medium text-ink ${mono ? 'font-mono tracking-wider' : ''}`}>
         {value}
-      </p>
+      </dd>
     </div>
   );
 }
